@@ -1,0 +1,33 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+ion-title {
+  text-align: center;
+}
+
+ion-item {
+  --background: transparent;
+}
+
+ion-input {
+  text-align: center;
+}
+
+ion-input::part(label) {
+  width: 100%;
+  text-align: center;
+}
+
+ion-input::part(native) {
+  text-align: center;
+}
+
+ion-text {
+  text-align: center;
+}
