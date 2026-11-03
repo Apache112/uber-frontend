@@ -1,13 +1,75 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>register</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Crear cuenta - Uber</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">register</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <div class="register-container">
+    <ion-list lines="none">
+      <ion-item>
+        <ion-input
+          label="Nombre completo"
+          labelPlacement="stacked"
+          type="text"
+          [(ngModel)]="registerData.name"
+          placeholder="Tu nombre"
+          autocomplete="name"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="ion-margin-top">
+        <ion-input
+          label="Correo electrónico"
+          labelPlacement="stacked"
+          type="email"
+          [(ngModel)]="registerData.email"
+          placeholder="ejemplo@correo.com"
+          autocomplete="email"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="ion-margin-top">
+        <ion-input
+          label="Contraseña"
+          labelPlacement="stacked"
+          type="password"
+          [(ngModel)]="registerData.password"
+          placeholder="Crea una contraseña"
+          autocomplete="new-password"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="ion-margin-top">
+        <ion-select
+          label="Tipo de cuenta"
+          labelPlacement="stacked"
+          [(ngModel)]="registerData.role"
+        >
+          <ion-select-option value="client">Cliente</ion-select-option>
+          <ion-select-option value="driver">Conductor</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <ion-text color="danger" *ngIf="errorMessage">
+      <p class="form-message">{{ errorMessage }}</p>
+    </ion-text>
+
+    <ion-text color="success" *ngIf="successMessage">
+      <p class="form-message">{{ successMessage }}</p>
+    </ion-text>
+
+    <div class="ion-margin-top">
+      <ion-button expand="block" (click)="onRegister()" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Creando cuenta...' : 'Registrarme' }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" [routerLink]="['/login']">
+        Ya tengo cuenta
+      </ion-button>
+    </div>
+  </div>
 </ion-content>

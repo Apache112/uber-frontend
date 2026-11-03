@@ -1,0 +1,12 @@
+.register-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.form-message {
+  text-align: center;
+}
