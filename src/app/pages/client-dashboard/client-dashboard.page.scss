@@ -1,12 +1,12 @@
 .dashboard-container {
   width: 100%;
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
-  padding-top: 10vh;
+  padding-bottom: 32px;
 }
 
 .welcome {
-  padding: 24px 16px;
+  padding: 16px;
 }
 
 .eyebrow {
@@ -17,7 +17,7 @@
 }
 
 h1 {
-  margin: 8px 0;
+  margin: 8px 0 4px;
   font-size: clamp(2rem, 6vw, 3rem);
 }
 
@@ -28,9 +28,44 @@ ion-card p {
 }
 
 ion-card {
-  margin: 8px 16px;
+  margin: 8px 0 20px;
 }
 
 ion-card h2 {
   margin-top: 0;
+}
+
+ion-list {
+  margin: 12px 0;
+}
+
+.estimate {
+  margin: 20px 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--ion-color-light);
+}
+
+.estimate h3 {
+  margin-top: 0;
+}
+
+.estimate strong {
+  font-size: 1.25rem;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ride-status {
+  color: var(--ion-color-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.form-message {
+  text-align: center;
 }

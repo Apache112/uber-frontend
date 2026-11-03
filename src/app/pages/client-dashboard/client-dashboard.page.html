@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Uber - Panel del cliente</ion-title>
+    <ion-title>Uber - Cliente</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,18 +8,141 @@
   <main class="dashboard-container">
     <section class="welcome">
       <p class="eyebrow">UBER</p>
-      <h1>¡Bienvenido!</h1>
-      <p>Tu sesión está iniciada. Aquí podrás consultar tu actividad como cliente.</p>
+      <h1>¿A dónde vamos?</h1>
+      <p>Indica el origen y el destino para calcular la tarifa y pedir tu viaje.</p>
     </section>
 
     <ion-card>
       <ion-card-content>
-        <h2>Historial de viajes</h2>
-        <p>Revisa los viajes asociados a tu cuenta.</p>
-        <ion-button expand="block" [routerLink]="['/trip-history']">
-          Ver mis viajes
+        <h2>Solicitar un viaje</h2>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-input
+              label="Punto de origen"
+              labelPlacement="stacked"
+              [(ngModel)]="rideForm.origin_name"
+              placeholder="Dirección o lugar de recogida"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Latitud del origen"
+              labelPlacement="stacked"
+              type="number"
+              [(ngModel)]="rideForm.origin_latitude"
+              placeholder="4.6766"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Longitud del origen"
+              labelPlacement="stacked"
+              type="number"
+              [(ngModel)]="rideForm.origin_longitude"
+              placeholder="-74.0483"
+            ></ion-input>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" fill="outline" (click)="useCurrentLocation()">
+          Usar mi ubicación como origen
+        </ion-button>
+
+        <ion-list lines="none">
+          <ion-item>
+            <ion-input
+              label="Destino"
+              labelPlacement="stacked"
+              [(ngModel)]="rideForm.destination_name"
+              placeholder="Dirección o lugar de destino"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Latitud del destino"
+              labelPlacement="stacked"
+              type="number"
+              [(ngModel)]="rideForm.destination_latitude"
+              placeholder="4.6664"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Longitud del destino"
+              labelPlacement="stacked"
+              type="number"
+              [(ngModel)]="rideForm.destination_longitude"
+              placeholder="-74.0536"
+            ></ion-input>
+          </ion-item>
+        </ion-list>
+
+        <ion-button expand="block" fill="outline" (click)="estimateFare()" [disabled]="isEstimating">
+          {{ isEstimating ? 'Calculando...' : 'Calcular tarifa' }}
+        </ion-button>
+
+        <section class="estimate" *ngIf="estimate">
+          <h3>Estimación</h3>
+          <p>Distancia: {{ estimate.distance_km }} km</p>
+          <p>Duración aproximada: {{ estimate.duration_min }} min</p>
+          <strong>{{ formatCurrency(estimate.estimated_fare) }}</strong>
+        </section>
+
+        <ion-button expand="block" (click)="requestRide()" [disabled]="isRequestingRide">
+          {{ isRequestingRide ? 'Enviando solicitud...' : 'Solicitar viaje' }}
         </ion-button>
       </ion-card-content>
     </ion-card>
+
+    <ion-card *ngIf="activeRide?.has_active && activeRide.data as ride">
+      <ion-card-content>
+        <div class="section-heading">
+          <h2>Tu viaje activo</h2>
+          <ion-button fill="clear" size="small" (click)="refreshActiveRide()" [disabled]="isRefreshing">
+            {{ isRefreshing ? 'Actualizando...' : 'Actualizar' }}
+          </ion-button>
+        </div>
+        <p class="ride-status">{{ statusLabel(ride.status) }}</p>
+        <p *ngIf="ride.origin_name"><strong>Origen:</strong> {{ ride.origin_name }}</p>
+        <p *ngIf="ride.destination_name"><strong>Destino:</strong> {{ ride.destination_name }}</p>
+        <p *ngIf="ride.estimated_fare"><strong>Tarifa estimada:</strong> {{ formatCurrency(ride.estimated_fare) }}</p>
+        <ng-container *ngIf="ride.driver">
+          <p *ngIf="ride.driver.user?.name"><strong>Conductor:</strong> {{ ride.driver.user.name }}</p>
+          <p *ngIf="ride.driver.user?.phone"><strong>Teléfono:</strong> {{ ride.driver.user.phone }}</p>
+          <p *ngIf="ride.vehicle">
+            <strong>Vehículo:</strong>
+            {{ ride.vehicle.color }} {{ ride.vehicle.brand }} {{ ride.vehicle.model }} ({{ ride.vehicle.plate }})
+          </p>
+          <p *ngIf="ride.driver.latest_location as location">
+            <a
+              [href]="'https://www.google.com/maps?q=' + location.latitude + ',' + location.longitude"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver ubicación del conductor
+            </a>
+          </p>
+        </ng-container>
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="danger"
+          (click)="cancelRide()"
+          [disabled]="isCancelling || ride.status === 'in_progress'"
+        >
+          {{ isCancelling ? 'Cancelando...' : 'Cancelar viaje' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-text color="danger" *ngIf="errorMessage">
+      <p class="form-message">{{ errorMessage }}</p>
+    </ion-text>
+    <ion-text color="success" *ngIf="successMessage">
+      <p class="form-message">{{ successMessage }}</p>
+    </ion-text>
+
+    <ion-button expand="block" fill="clear" [routerLink]="['/trip-history']">
+      Ver historial y calificar viajes
+    </ion-button>
   </main>
 </ion-content>

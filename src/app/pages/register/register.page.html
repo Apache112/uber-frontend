@@ -33,26 +33,95 @@
 
       <ion-item class="ion-margin-top">
         <ion-input
+          label="Teléfono"
+          labelPlacement="stacked"
+          type="tel"
+          [(ngModel)]="registerData.phone"
+          placeholder="3001234567"
+          autocomplete="tel"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="ion-margin-top">
+        <ion-input
           label="Contraseña"
           labelPlacement="stacked"
           type="password"
           [(ngModel)]="registerData.password"
-          placeholder="Crea una contraseña"
+          placeholder="Mínimo 6 caracteres"
           autocomplete="new-password"
           required
         ></ion-input>
       </ion-item>
 
       <ion-item class="ion-margin-top">
-        <ion-select
-          label="Tipo de cuenta"
-          labelPlacement="stacked"
-          [(ngModel)]="registerData.role"
-        >
+        <ion-select label="Tipo de cuenta" labelPlacement="stacked" [(ngModel)]="registerData.role">
           <ion-select-option value="client">Cliente</ion-select-option>
           <ion-select-option value="driver">Conductor</ion-select-option>
         </ion-select>
       </ion-item>
+
+      <ng-container *ngIf="registerData.role === 'driver'">
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Número de licencia"
+            labelPlacement="stacked"
+            [(ngModel)]="registerData.license_number"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Placa del vehículo"
+            labelPlacement="stacked"
+            [(ngModel)]="registerData.plate"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Marca del vehículo"
+            labelPlacement="stacked"
+            [(ngModel)]="registerData.brand"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Modelo del vehículo"
+            labelPlacement="stacked"
+            [(ngModel)]="registerData.model"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Año del vehículo"
+            labelPlacement="stacked"
+            type="number"
+            [(ngModel)]="registerData.year"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Capacidad de pasajeros"
+            labelPlacement="stacked"
+            type="number"
+            min="1"
+            [(ngModel)]="registerData.capacity"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-input
+            label="Color del vehículo"
+            labelPlacement="stacked"
+            [(ngModel)]="registerData.color"
+            required
+          ></ion-input>
+        </ion-item>
+      </ng-container>
     </ion-list>
 
     <ion-text color="danger" *ngIf="errorMessage">
@@ -67,9 +136,7 @@
       <ion-button expand="block" (click)="onRegister()" [disabled]="isSubmitting">
         {{ isSubmitting ? 'Creando cuenta...' : 'Registrarme' }}
       </ion-button>
-      <ion-button expand="block" fill="clear" [routerLink]="['/login']">
-        Ya tengo cuenta
-      </ion-button>
+      <ion-button expand="block" fill="clear" [routerLink]="['/login']"> Ya tengo cuenta </ion-button>
     </div>
   </div>
 </ion-content>

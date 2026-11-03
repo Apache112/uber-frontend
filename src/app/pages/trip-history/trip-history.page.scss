@@ -1,0 +1,63 @@
+.history-container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.page-heading,
+.trip-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-heading h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+}
+
+ion-card {
+  margin: 12px 0;
+}
+
+.trip-heading h2 {
+  margin-top: 0;
+}
+
+.trip-heading span {
+  color: var(--ion-color-medium);
+}
+
+.rating-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+.rating-form h3 {
+  margin: 0;
+}
+
+.incident-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.empty-state,
+.form-message,
+.rated-message {
+  padding: 16px;
+  text-align: center;
+}
+
+.form-message {
+  color: var(--ion-color-danger);
+}
+
+.rated-message {
+  color: var(--ion-color-success);
+}

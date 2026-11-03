@@ -1,13 +1,113 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>driver-dashboard</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Uber - Conductor</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">driver-dashboard</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <main class="dashboard-container">
+    <section class="welcome">
+      <p class="eyebrow">UBER CONDUCTOR</p>
+      <h1>Tu jornada</h1>
+      <p>Conéctate para recibir solicitudes y gestionar tus viajes.</p>
+    </section>
+
+    <ion-card>
+      <ion-card-content>
+        <div class="availability-row">
+          <div>
+            <h2>Disponibilidad</h2>
+            <p [class.online]="isOnline">{{ isOnline ? 'En línea' : 'Desconectado' }}</p>
+          </div>
+          <ion-button (click)="toggleAvailability()" [disabled]="isUpdatingAvailability || !!activeTrip">
+            {{ isUpdatingAvailability ? 'Actualizando...' : isOnline ? 'Desconectarme' : 'Conectarme' }}
+          </ion-button>
+        </div>
+        <p class="hint" *ngIf="activeTrip">Finaliza el viaje activo antes de cambiar tu disponibilidad.</p>
+        <p class="hint" *ngIf="locationMessage">{{ locationMessage }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="activeTrip as trip">
+      <ion-card-content>
+        <h2>Viaje activo #{{ trip.id }}</h2>
+        <p class="trip-status">{{ statusLabel(trip.status) }}</p>
+        <p *ngIf="trip.estimated_fare">Tarifa estimada: {{ formatCurrency(trip.estimated_fare) }}</p>
+
+        <ion-button
+          *ngIf="trip.status === 'assigned'"
+          expand="block"
+          (click)="advanceTrip('arrive')"
+          [disabled]="isUpdatingTrip"
+        >
+          {{ isUpdatingTrip ? 'Actualizando...' : 'Ya llegué al origen' }}
+        </ion-button>
+
+        <ion-button
+          *ngIf="trip.status === 'driver_arrived'"
+          expand="block"
+          (click)="advanceTrip('start')"
+          [disabled]="isUpdatingTrip"
+        >
+          {{ isUpdatingTrip ? 'Actualizando...' : 'Iniciar viaje' }}
+        </ion-button>
+
+        <ng-container *ngIf="trip.status === 'in_progress'">
+          <ion-input
+            label="Distancia recorrida (km)"
+            labelPlacement="stacked"
+            type="number"
+            min="0.1"
+            [(ngModel)]="actualDistanceKm"
+          ></ion-input>
+          <ion-input
+            label="Duración del viaje (minutos)"
+            labelPlacement="stacked"
+            type="number"
+            min="1"
+            [(ngModel)]="actualDurationMin"
+          ></ion-input>
+          <ion-button expand="block" color="success" (click)="advanceTrip('complete')" [disabled]="isUpdatingTrip">
+            {{ isUpdatingTrip ? 'Finalizando...' : 'Finalizar viaje' }}
+          </ion-button>
+        </ng-container>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!activeTrip && isOnline">
+      <ion-card-content>
+        <div class="section-heading">
+          <h2>Solicitudes disponibles</h2>
+          <ion-button fill="clear" size="small" (click)="loadRequests()" [disabled]="isLoadingRequests">
+            {{ isLoadingRequests ? 'Cargando...' : 'Actualizar' }}
+          </ion-button>
+        </div>
+
+        <p *ngIf="!requests.length && !isLoadingRequests">No hay solicitudes pendientes por ahora.</p>
+
+        <article class="request" *ngFor="let request of requests">
+          <h3>Solicitud #{{ request.id }}</h3>
+          <p><strong>Origen:</strong> {{ request.origin_name }}</p>
+          <p><strong>Destino:</strong> {{ request.destination_name }}</p>
+          <p><strong>Distancia:</strong> {{ request.estimated_distance_km }} km</p>
+          <p><strong>Tarifa estimada:</strong> {{ formatCurrency(request.estimated_fare) }}</p>
+          <p *ngIf="request.client as client"><strong>Cliente:</strong> {{ client.name }}</p>
+          <p *ngIf="request.client?.phone as phone"><strong>Teléfono:</strong> {{ phone }}</p>
+          <ion-button expand="block" (click)="acceptRequest(request)" [disabled]="isAcceptingRequestId !== undefined">
+            {{ isAcceptingRequestId === request.id ? 'Aceptando...' : 'Aceptar servicio' }}
+          </ion-button>
+        </article>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!activeTrip && !isOnline">
+      <ion-card-content>
+        <h2>Conéctate para comenzar</h2>
+        <p>Cuando estés en línea, aquí aparecerán las solicitudes de viaje disponibles.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <p class="message error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="message success" *ngIf="infoMessage">{{ infoMessage }}</p>
+  </main>
 </ion-content>

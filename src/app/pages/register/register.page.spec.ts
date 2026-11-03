@@ -14,7 +14,14 @@ describe('RegisterPage', () => {
         provideRouter([]),
         {
           provide: AuthService,
-          useValue: { register: () => of({}) },
+          useValue: {
+            register: () =>
+              of({
+                success: true,
+                access_token: 'test-token',
+                user: { role: 'client' },
+              }),
+          },
         },
       ],
     });

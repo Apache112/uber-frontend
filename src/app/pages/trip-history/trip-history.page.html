@@ -1,13 +1,73 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>trip-history</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Historial de viajes</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">trip-history</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <main class="history-container">
+    <div class="page-heading">
+      <h1>Mis viajes</h1>
+      <ion-button fill="outline" [routerLink]="['/client-dashboard']"> Volver </ion-button>
+    </div>
+
+    <ion-button expand="block" fill="clear" (click)="loadTrips()" [disabled]="isLoading">
+      {{ isLoading ? 'Cargando...' : 'Actualizar historial' }}
+    </ion-button>
+
+    <p class="empty-state" *ngIf="!isLoading && !trips.length">Aún no tienes viajes en tu historial.</p>
+
+    <ion-card *ngFor="let trip of trips">
+      <ion-card-content>
+        <div class="trip-heading">
+          <h2>Viaje #{{ trip.id }}</h2>
+          <span>{{ trip.status }}</span>
+        </div>
+        <p *ngIf="trip.completed_at">Fecha: {{ trip.completed_at | date: 'medium' }}</p>
+        <p *ngIf="trip.driver?.user?.name">Conductor: {{ trip.driver.user.name }}</p>
+        <p *ngIf="trip.vehicle?.plate">Vehículo: {{ trip.vehicle.plate }}</p>
+        <p><strong>Tarifa:</strong> {{ formatCurrency(trip.final_fare) }}</p>
+
+        <section
+          class="rating-form"
+          *ngIf="
+            trip.status === 'completed' &&
+            !trip.rating &&
+            !ratedTripIds.has(trip.id)
+          "
+        >
+          <h3>Califica tu viaje</h3>
+          <ion-select label="Calificación" labelPlacement="stacked" [(ngModel)]="ratingScores[trip.id]">
+            <ion-select-option [value]="5">5 estrellas</ion-select-option>
+            <ion-select-option [value]="4">4 estrellas</ion-select-option>
+            <ion-select-option [value]="3">3 estrellas</ion-select-option>
+            <ion-select-option [value]="2">2 estrellas</ion-select-option>
+            <ion-select-option [value]="1">1 estrella</ion-select-option>
+          </ion-select>
+          <ion-textarea
+            label="Comentario (opcional)"
+            labelPlacement="stacked"
+            [(ngModel)]="ratingComments[trip.id]"
+            rows="3"
+          ></ion-textarea>
+          <label class="incident-option">
+            <input type="checkbox" [(ngModel)]="ratingIncidents[trip.id]" />
+            Reportar una incidencia
+          </label>
+          <ion-button expand="block" (click)="submitRating(trip)" [disabled]="submittingTripId === trip.id">
+            {{ submittingTripId === trip.id ? 'Enviando...' : 'Enviar calificación' }}
+          </ion-button>
+        </section>
+        <p *ngIf="trip.rating">Calificación enviada: {{ trip.rating.score }} / 5</p>
+        <p *ngIf="ratedTripIds.has(trip.id)" class="rated-message">Gracias por calificar este viaje.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-text color="danger" *ngIf="errorMessage">
+      <p class="form-message">{{ errorMessage }}</p>
+    </ion-text>
+    <ion-text color="success" *ngIf="successMessage">
+      <p class="form-message">{{ successMessage }}</p>
+    </ion-text>
+  </main>
 </ion-content>

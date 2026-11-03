@@ -1,0 +1,84 @@
+.dashboard-container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.welcome {
+  padding: 16px;
+}
+
+.eyebrow {
+  color: var(--ion-color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+h1 {
+  margin: 8px 0 4px;
+  font-size: clamp(2rem, 6vw, 3rem);
+}
+
+.welcome > p:last-child,
+ion-card p,
+.hint {
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+}
+
+ion-card {
+  margin: 8px 0 20px;
+}
+
+ion-card h2 {
+  margin-top: 0;
+}
+
+.availability-row,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.availability-row p {
+  margin-bottom: 0;
+}
+
+.online,
+.trip-status {
+  color: var(--ion-color-success) !important;
+  font-weight: 700;
+}
+
+.request {
+  padding: 16px 0;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+.request h3 {
+  margin-top: 0;
+}
+
+.message {
+  padding: 12px;
+  text-align: center;
+}
+
+.error {
+  color: var(--ion-color-danger);
+}
+
+.success {
+  color: var(--ion-color-success);
+}
+
+@media (max-width: 420px) {
+  .availability-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
