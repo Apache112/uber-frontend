@@ -1,0 +1,36 @@
+.dashboard-container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-top: 10vh;
+}
+
+.welcome {
+  padding: 24px 16px;
+}
+
+.eyebrow {
+  color: var(--ion-color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+}
+
+.welcome > p:last-child,
+ion-card p {
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+}
+
+ion-card {
+  margin: 8px 16px;
+}
+
+ion-card h2 {
+  margin-top: 0;
+}
