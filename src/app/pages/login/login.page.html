@@ -6,13 +6,31 @@
 
 <ion-content class="ion-padding">
   <div class="login-container">
+    <section class="login-intro">
+      <span class="brand-mark" aria-hidden="true">U</span>
+      <p class="eyebrow">TU CIUDAD, A TU RITMO</p>
+      <h1>Qué bueno verte</h1>
+      <p>Inicia sesión y sigamos moviéndonos.</p>
+    </section>
     <ion-list lines="none">
       <ion-item>
-        <ion-input label="Correo o Teléfono" labelPlacement="stacked" type="text" [(ngModel)]="loginData.login" placeholder="ejemplo@correo.com"></ion-input>
+        <ion-input
+          label="Correo o Teléfono"
+          labelPlacement="stacked"
+          type="text"
+          [(ngModel)]="loginData.login"
+          placeholder="ejemplo@correo.com"
+        ></ion-input>
       </ion-item>
 
       <ion-item class="ion-margin-top">
-        <ion-input label="Contraseña" labelPlacement="stacked" type="password" [(ngModel)]="loginData.password" placeholder="********"></ion-input>
+        <ion-input
+          label="Contraseña"
+          labelPlacement="stacked"
+          type="password"
+          [(ngModel)]="loginData.password"
+          placeholder="********"
+        ></ion-input>
       </ion-item>
     </ion-list>
 

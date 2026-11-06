@@ -1,19 +1,21 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-// Importamos los componentes listos para standalone usando los nombres nativos de Ionic
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar, 
-  IonItem, 
-  IonInput, 
-  IonButton, 
-  IonList, 
-  IonText 
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonItem,
+  IonInput,
+  IonButton,
+  IonList,
+  IonText,
 } from '@ionic/angular';
+
+import { apiErrorMessage } from '../../services/api-error';
+// Importamos los componentes listos para standalone usando los nombres nativos de Ionic
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -23,19 +25,19 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   // Asegúrate de listar explícitamente cada componente de Ionic aquí
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     RouterModule,
-    IonContent, 
-    IonHeader, 
-    IonTitle, 
-    IonToolbar, 
-    IonItem, 
-    IonInput, 
-    IonButton, 
-    IonList, 
-    IonText
-  ]
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    IonItem,
+    IonInput,
+    IonButton,
+    IonList,
+    IonText,
+  ],
 })
 export class LoginPage {
   private authService = inject(AuthService);
@@ -43,12 +45,12 @@ export class LoginPage {
 
   loginData = {
     login: '',
-    password: ''
+    password: '',
   };
 
   errorMessage = '';
 
-  onLogin() {
+  onLogin(): void {
     this.authService.login(this.loginData).subscribe({
       next: (res) => {
         if (res.user.role === 'client') {
@@ -58,8 +60,8 @@ export class LoginPage {
         }
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Error al iniciar sesión';
-      }
+        this.errorMessage = apiErrorMessage(err, 'Error al iniciar sesión');
+      },
     });
   }
 }

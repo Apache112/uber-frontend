@@ -1,8 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
+import { catchError, defer, of, throwError, tap } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+
+import { OfflineDataService } from './offline-data.service';
 
 export interface Coordinates {
   latitude: number;
@@ -84,57 +87,90 @@ export interface ClientTrip {
 })
 export class ApiService {
   private http = inject(HttpClient);
+  private offline = inject(OfflineDataService);
   private apiUrl = environment.apiUrl;
 
   estimateFare(coords: RideEstimateRequest): Observable<{ estimate: RideEstimate }> {
-    return this.http.post<{ estimate: RideEstimate }>(`${this.apiUrl}/client/estimate-fare`, coords);
+    return this.withOfflineFallback(
+      this.http.post<{ estimate: RideEstimate }>(`${this.apiUrl}/client/estimate-fare`, coords),
+      () => ({ estimate: this.offline.estimateFare(coords) }),
+    );
   }
 
   createRideRequest(rideData: RideRequestPayload): Observable<{ ride_request: RideRequest }> {
-    return this.http.post<{ ride_request: RideRequest }>(`${this.apiUrl}/client/ride-requests`, rideData);
+    return this.withOfflineFallback(
+      this.http.post<{ ride_request: RideRequest }>(`${this.apiUrl}/client/ride-requests`, rideData),
+      () => this.offline.createRideRequest(rideData),
+    );
   }
 
   getClientActive(): Observable<ClientActiveResponse> {
-    return this.http.get<ClientActiveResponse>(`${this.apiUrl}/client/active`);
+    return this.withOfflineFallback(this.http.get<ClientActiveResponse>(`${this.apiUrl}/client/active`), () =>
+      this.offline.getClientActive(),
+    );
   }
 
   cancelClientRide(id: number, reason: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/client/cancel/${id}`, { reason });
+    return this.withOfflineFallback(
+      this.http.post<{ message: string }>(`${this.apiUrl}/client/cancel/${id}`, { reason }),
+      () => this.offline.cancelClientRide(id, reason),
+    );
   }
 
   getClientTrips(): Observable<{ trips: { data: ClientTrip[] } }> {
-    return this.http.get<{ trips: { data: ClientTrip[] } }>(`${this.apiUrl}/client/trips`);
+    return this.withOfflineFallback(
+      this.http.get<{ trips: { data: ClientTrip[] } }>(`${this.apiUrl}/client/trips`),
+      () => this.offline.getClientTrips(),
+    );
   }
 
   rateClientTrip(
     id: number,
     rating: { score: number; comment: string; has_incident: boolean },
   ): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/client/trips/${id}/rating`, rating);
+    return this.withOfflineFallback(
+      this.http.post<{ message: string }>(`${this.apiUrl}/client/trips/${id}/rating`, rating),
+      () => this.offline.rateClientTrip(id, rating),
+    );
   }
 
   toggleAvailability(status: 'available' | 'unavailable'): Observable<{
     availability_status: 'available' | 'unavailable';
   }> {
-    return this.http.put<{ availability_status: 'available' | 'unavailable' }>(`${this.apiUrl}/driver/availability`, {
-      status,
-    });
+    return this.withOfflineFallback(
+      this.http.put<{ availability_status: 'available' | 'unavailable' }>(`${this.apiUrl}/driver/availability`, {
+        status,
+      }),
+      () => this.offline.toggleAvailability(status),
+    );
   }
 
   getAvailableRequests(): Observable<{ requests: RideRequest[] }> {
-    return this.http.get<{ requests: RideRequest[] }>(`${this.apiUrl}/driver/ride-requests`);
+    return this.withOfflineFallback(
+      this.http.get<{ requests: RideRequest[] }>(`${this.apiUrl}/driver/ride-requests`),
+      () => this.offline.getAvailableRequests(),
+    );
   }
 
   acceptRideRequest(id: number): Observable<{ trip: DriverTrip }> {
-    return this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/ride-requests/${id}/accept`, {});
+    return this.withOfflineFallback(
+      this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/ride-requests/${id}/accept`, {}),
+      () => this.offline.acceptRideRequest(id),
+    );
   }
 
   markDriverArrived(id: number): Observable<{ trip: DriverTrip }> {
-    return this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/arrive`, {});
+    return this.withOfflineFallback(
+      this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/arrive`, {}),
+      () => this.offline.updateDriverTrip(id, 'arrive'),
+    );
   }
 
   startDriverTrip(id: number): Observable<{ trip: DriverTrip }> {
-    return this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/start`, {});
+    return this.withOfflineFallback(
+      this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/start`, {}),
+      () => this.offline.updateDriverTrip(id, 'start'),
+    );
   }
 
   completeDriverTrip(
@@ -142,15 +178,39 @@ export class ApiService {
     actualDistanceKm: number,
     actualDurationMin: number,
   ): Observable<{ trip: DriverTrip }> {
-    return this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/complete`, {
-      actual_distance_km: actualDistanceKm,
-      actual_duration_min: actualDurationMin,
-    });
+    return this.withOfflineFallback(
+      this.http.post<{ trip: DriverTrip }>(`${this.apiUrl}/driver/trips/${id}/complete`, {
+        actual_distance_km: actualDistanceKm,
+        actual_duration_min: actualDurationMin,
+      }),
+      () => this.offline.updateDriverTrip(id, 'complete', actualDistanceKm, actualDurationMin),
+    );
   }
 
   updateDriverLocation(
     location: Coordinates & { heading?: number; speed?: number; trip_id?: number },
   ): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/driver/location`, location);
+    return this.withOfflineFallback(this.http.post(`${this.apiUrl}/driver/location`, location), () =>
+      this.offline.updateDriverLocation(location),
+    );
+  }
+
+  private withOfflineFallback<T>(source: Observable<T>, fallback: () => T): Observable<T> {
+    if (this.offline.isLocalSession()) {
+      this.offline.setOfflineMode(true);
+      return defer(() => of(fallback()));
+    }
+
+    return source.pipe(
+      tap(() => this.offline.setOfflineMode(false)),
+      catchError((error: unknown) => {
+        if (!(error instanceof HttpErrorResponse) || error.status !== 0) {
+          return throwError(() => error);
+        }
+
+        this.offline.setOfflineMode(true);
+        return defer(() => of(fallback()));
+      }),
+    );
   }
 }

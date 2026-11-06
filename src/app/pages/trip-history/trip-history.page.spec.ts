@@ -9,6 +9,7 @@ describe('TripHistoryPage', () => {
   let fixture: ComponentFixture<TripHistoryPage>;
 
   beforeEach(() => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -23,7 +24,21 @@ describe('TripHistoryPage', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('records a clearly marked demo payment and local receipt', () => {
+    component.paymentMethod[12] = 'nequi';
+    component.recordDemoPayment({ id: 12, status: 'completed', final_fare: 18000 });
+
+    expect(component.paymentReceipts[12].method).toBe('nequi');
+    expect(component.paymentReceipts[12].amount).toBe(18000);
+    expect(component.successMessage).toContain('No se realizó ningún cobro real');
+    expect(JSON.parse(localStorage.getItem('demo_payment_receipts') || '{}')['12'].amount).toBe(18000);
   });
 });

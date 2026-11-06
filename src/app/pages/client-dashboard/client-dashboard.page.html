@@ -7,14 +7,20 @@
 <ion-content class="ion-padding">
   <main class="dashboard-container">
     <section class="welcome">
-      <p class="eyebrow">UBER</p>
+      <p class="eyebrow">UBER · VIAJA A TU MANERA</p>
       <h1>¿A dónde vamos?</h1>
-      <p>Indica el origen y el destino para calcular la tarifa y pedir tu viaje.</p>
+      <p>Tu próximo viaje empieza aquí. Elige el punto de recogida y descubre cuánto cuesta.</p>
     </section>
 
     <ion-card>
       <ion-card-content>
-        <h2>Solicitar un viaje</h2>
+        <div class="card-heading">
+          <div>
+            <p class="step-label">01 · TU RUTA</p>
+            <h2>Solicitar un viaje</h2>
+          </div>
+          <span class="heading-icon" aria-hidden="true">↗</span>
+        </div>
         <ion-list lines="none">
           <ion-item>
             <ion-input
@@ -43,9 +49,29 @@
             ></ion-input>
           </ion-item>
         </ion-list>
-        <ion-button expand="block" fill="outline" (click)="useCurrentLocation()">
-          Usar mi ubicación como origen
+        <ion-button expand="block" fill="outline" (click)="useCurrentLocation()" [disabled]="isTrackingLocation">
+          {{ isTrackingLocation ? 'Actualizando ubicación en vivo…' : 'Usar mi ubicación como origen' }}
         </ion-button>
+        <div class="map-frame" *ngIf="mapUrl">
+          <iframe
+            [src]="mapUrl"
+            title="Mapa de Google con tu ubicación en tiempo real"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen
+          ></iframe>
+          <div class="map-caption">
+            <span class="live-dot"></span>
+            Ubicación en vivo
+          </div>
+        </div>
+        <ion-button *ngIf="isTrackingLocation" fill="clear" size="small" (click)="stopLocationWatch()">
+          Detener seguimiento GPS
+        </ion-button>
+        <p class="map-setup" *ngIf="mapConfigurationMissing">
+          La ubicación GPS está activa, pero falta configurar una clave de Google Maps Embed API en la configuración
+          local para mostrar el mapa.
+        </p>
 
         <ion-list lines="none">
           <ion-item>
@@ -77,14 +103,14 @@
         </ion-list>
 
         <ion-button expand="block" fill="outline" (click)="estimateFare()" [disabled]="isEstimating">
-          {{ isEstimating ? 'Calculando...' : 'Calcular tarifa' }}
+          {{ isEstimating ? 'Calculando...' : 'Calcular tarifa estimada' }}
         </ion-button>
 
         <section class="estimate" *ngIf="estimate">
-          <h3>Estimación</h3>
-          <p>Distancia: {{ estimate.distance_km }} km</p>
-          <p>Duración aproximada: {{ estimate.duration_min }} min</p>
-          <strong>{{ formatCurrency(estimate.estimated_fare) }}</strong>
+          <p class="step-label">02 · ESTIMACIÓN</p>
+          <h3>{{ formatCurrency(estimate.estimated_fare) }}</h3>
+          <p>{{ estimate.distance_km }} km <span aria-hidden="true">·</span> {{ estimate.duration_min }} min aprox.</p>
+          <small>El valor final puede variar según la duración y distancia reales.</small>
         </section>
 
         <ion-button expand="block" (click)="requestRide()" [disabled]="isRequestingRide">

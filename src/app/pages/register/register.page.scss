@@ -2,9 +2,24 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100%;
-  max-width: 480px;
+  min-height: calc(100% - 32px);
+  max-width: 540px;
   margin: 0 auto;
+  padding: clamp(20px, 6vw, 36px);
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 26px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 70px rgb(16 42 67 / 12%);
+}
+
+ion-content {
+  --background: linear-gradient(145deg, #f3f8fb, #e9f2f5);
+}
+
+ion-item {
+  --background: #f4f8fa;
+  --border-radius: 14px;
+  margin: 8px 0;
 }
 
 .form-message {

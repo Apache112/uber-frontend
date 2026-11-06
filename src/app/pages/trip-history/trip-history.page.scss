@@ -29,6 +29,76 @@ ion-card {
   color: var(--ion-color-medium);
 }
 
+.payment-panel {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #d5ece7;
+  border-radius: 18px;
+  background: linear-gradient(140deg, #f3fbf7, #f4f8ff);
+}
+
+.payment-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.payment-heading h3 {
+  margin: 0 0 14px;
+  color: #102a43;
+}
+
+.step-label {
+  margin: 0 0 5px;
+  color: #138b85;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.payment-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: #dff3ec;
+  color: #087c78;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.demo-notice,
+.receipt p {
+  margin-bottom: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.receipt {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.receipt > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.receipt span {
+  color: var(--ion-color-medium);
+}
+
+.receipt-total {
+  padding-top: 10px;
+  border-top: 1px dashed #b6d2cd;
+  font-size: 1.1rem;
+}
+
 .rating-form {
   display: grid;
   gap: 14px;

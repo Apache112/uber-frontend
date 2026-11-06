@@ -56,6 +56,18 @@ export class TripHistoryPage implements OnInit {
   submittingTripId?: number;
   errorMessage = '';
   successMessage = '';
+  paymentMethod: Record<number, 'nequi' | 'daviplata' | ''> = {};
+  paymentReceipts: Record<number, { method: 'nequi' | 'daviplata'; paidAt: string; amount: number }> = {};
+
+  constructor() {
+    try {
+      this.paymentReceipts = JSON.parse(
+        localStorage.getItem('demo_payment_receipts') || '{}',
+      ) as typeof this.paymentReceipts;
+    } catch (error) {
+      console.error('No se pudieron leer los comprobantes guardados.', error);
+    }
+  }
 
   ngOnInit(): void {
     this.loadTrips();
@@ -103,6 +115,34 @@ export class TripHistoryPage implements OnInit {
           this.submittingTripId = undefined;
         },
       });
+  }
+
+  recordDemoPayment(trip: ClientTrip): void {
+    const method = this.paymentMethod[trip.id];
+    if (!method || trip.final_fare == null) {
+      this.errorMessage = 'Selecciona un método y verifica que el viaje tenga una tarifa final.';
+      return;
+    }
+
+    const receipt = {
+      method,
+      paidAt: new Date().toISOString(),
+      amount: trip.final_fare,
+    };
+    const receipts = { ...this.paymentReceipts, [trip.id]: receipt };
+    try {
+      localStorage.setItem('demo_payment_receipts', JSON.stringify(receipts));
+      this.paymentReceipts = receipts;
+      this.errorMessage = '';
+      this.successMessage = 'Pago de demostración registrado. No se realizó ningún cobro real.';
+    } catch (error) {
+      this.errorMessage = 'No se pudo guardar el comprobante en este dispositivo.';
+      console.error('No se pudo guardar el comprobante de demostración.', error);
+    }
+  }
+
+  paymentMethodLabel(method: 'nequi' | 'daviplata'): string {
+    return method === 'nequi' ? 'Nequi' : 'Daviplata';
   }
 
   formatCurrency(amount?: number): string {

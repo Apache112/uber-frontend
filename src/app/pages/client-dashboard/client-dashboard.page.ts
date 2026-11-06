@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import { Component, inject } from '@angular/core';
+import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -20,6 +21,7 @@ import {
 import { apiErrorMessage } from '../../services/api-error';
 import type { ClientActiveResponse, RideEstimate, RideRequestPayload } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -45,7 +47,9 @@ import { ApiService } from '../../services/api.service';
 })
 export class ClientDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private sanitizer = inject(DomSanitizer);
   private activeRefreshTimer?: ReturnType<typeof setInterval>;
+  private locationWatchId?: number;
 
   rideForm = {
     origin_name: '',
@@ -64,6 +68,10 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   isRequestingRide = false;
   isRefreshing = false;
   isCancelling = false;
+  mapUrl?: SafeResourceUrl;
+  isTrackingLocation = false;
+  mapConfigurationMissing = !environment.googleMapsApiKey;
+  private lastMapUpdate?: { latitude: number; longitude: number; at: number };
 
   ngOnInit(): void {
     this.refreshActiveRide();
@@ -78,6 +86,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     if (this.activeRefreshTimer) {
       clearInterval(this.activeRefreshTimer);
     }
+    this.stopLocationWatch();
   }
 
   estimateFare(): void {
@@ -179,20 +188,72 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    if (this.locationWatchId != null) {
+      return;
+    }
+
+    this.isTrackingLocation = true;
+    this.locationWatchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
         this.rideForm.origin_latitude = coords.latitude;
         this.rideForm.origin_longitude = coords.longitude;
+        this.updateMap(coords.latitude, coords.longitude);
         this.errorMessage = '';
       },
       (error) => {
+        this.isTrackingLocation = false;
+        this.locationWatchId = undefined;
         this.errorMessage =
           error.code === error.PERMISSION_DENIED
-            ? 'Permite el acceso a tu ubicación o escribe las coordenadas del origen.'
-            : 'No se pudo obtener tu ubicación. Escribe las coordenadas del origen.';
+            ? 'Permite el acceso a tu ubicación para mostrar el mapa en tiempo real.'
+            : 'No se pudo obtener tu ubicación. Revisa el GPS y los permisos del navegador.';
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 },
     );
+  }
+
+  stopLocationWatch(): void {
+    if (this.locationWatchId != null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(this.locationWatchId);
+      this.locationWatchId = undefined;
+    }
+    this.isTrackingLocation = false;
+  }
+
+  private updateMap(latitude: number, longitude: number): void {
+    const now = Date.now();
+    const last = this.lastMapUpdate;
+    if (last && now - last.at < 15000 && this.distanceMeters(last.latitude, last.longitude, latitude, longitude) < 25) {
+      return;
+    }
+
+    this.lastMapUpdate = { latitude, longitude, at: now };
+    const key = environment.googleMapsApiKey.trim();
+    if (!key) {
+      this.mapUrl = undefined;
+      this.mapConfigurationMissing = true;
+      return;
+    }
+
+    const query = new URLSearchParams({
+      key,
+      q: `${latitude},${longitude}`,
+      zoom: '16',
+    });
+    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.google.com/maps/embed/v1/place?${query.toString()}`,
+    );
+    this.mapConfigurationMissing = false;
+  }
+
+  private distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const radians = (degrees: number) => (degrees * Math.PI) / 180;
+    const latitudeDelta = radians(lat2 - lat1);
+    const longitudeDelta = radians(lon2 - lon1);
+    const value =
+      Math.sin(latitudeDelta / 2) ** 2 +
+      Math.cos(radians(lat1)) * Math.cos(radians(lat2)) * Math.sin(longitudeDelta / 2) ** 2;
+    return 6371000 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
   }
 
   formatCurrency(amount?: number): string {

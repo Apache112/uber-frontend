@@ -28,6 +28,35 @@
         <p *ngIf="trip.vehicle?.plate">Vehículo: {{ trip.vehicle.plate }}</p>
         <p><strong>Tarifa:</strong> {{ formatCurrency(trip.final_fare) }}</p>
 
+        <section class="payment-panel" *ngIf="trip.status === 'completed'">
+          <div class="payment-heading">
+            <div>
+              <p class="step-label">PAGO Y FACTURA</p>
+              <h3>Finaliza tu viaje</h3>
+            </div>
+            <span class="payment-icon" aria-hidden="true">$</span>
+          </div>
+          <ng-container *ngIf="!paymentReceipts[trip.id]; else receiptDetails">
+            <ion-select label="Método de pago" labelPlacement="stacked" [(ngModel)]="paymentMethod[trip.id]">
+              <ion-select-option value="nequi">Nequi · demostración</ion-select-option>
+              <ion-select-option value="daviplata">Daviplata · demostración</ion-select-option>
+            </ion-select>
+            <ion-button expand="block" (click)="recordDemoPayment(trip)" [disabled]="!paymentMethod[trip.id]">
+              Registrar pago de demostración
+            </ion-button>
+            <p class="demo-notice">Simulación únicamente: no se realiza ningún cobro ni se envía dinero.</p>
+          </ng-container>
+          <ng-template #receiptDetails>
+            <div class="receipt" *ngIf="paymentReceipts[trip.id] as receipt">
+              <div><span>Comprobante local</span><strong>#{{ trip.id }}</strong></div>
+              <div><span>Fecha</span><strong>{{ receipt.paidAt | date: 'short' }}</strong></div>
+              <div><span>Método</span><strong>{{ paymentMethodLabel(receipt.method) }}</strong></div>
+              <div class="receipt-total"><span>Total</span><strong>{{ formatCurrency(receipt.amount) }}</strong></div>
+              <p>Factura de demostración guardada en este dispositivo. No es un comprobante tributario.</p>
+            </div>
+          </ng-template>
+        </section>
+
         <section
           class="rating-form"
           *ngIf="

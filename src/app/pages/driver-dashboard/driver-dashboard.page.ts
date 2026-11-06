@@ -18,6 +18,12 @@ import type { DriverTrip, RideRequest } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
 
 const ACTIVE_TRIP_KEY = 'driver_active_trip';
+const DRIVER_EARNINGS_KEY = 'driver_demo_earnings';
+
+interface DriverEarnings {
+  tripIds: number[];
+  total: number;
+}
 
 @Component({
   selector: 'app-driver-dashboard',
@@ -54,8 +60,10 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
   locationMessage = '';
   actualDistanceKm: number | null = null;
   actualDurationMin: number | null = null;
+  earnings: DriverEarnings = { tripIds: [], total: 0 };
 
   ngOnInit(): void {
+    this.loadEarnings();
     const savedTrip = sessionStorage.getItem(ACTIVE_TRIP_KEY);
     if (savedTrip) {
       try {
@@ -174,6 +182,7 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
       next: (response) => {
         this.isUpdatingTrip = false;
         if (action === 'complete') {
+          this.recordEarning(tripId, response.trip.final_fare);
           this.infoMessage = `Viaje finalizado. Tarifa: ${this.formatCurrency(response.trip.final_fare)}.`;
           this.activeTrip = undefined;
           sessionStorage.removeItem(ACTIVE_TRIP_KEY);
@@ -214,6 +223,36 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
           currency: 'COP',
           maximumFractionDigits: 0,
         }).format(amount);
+  }
+
+  private loadEarnings(): void {
+    try {
+      const saved = localStorage.getItem(DRIVER_EARNINGS_KEY);
+      if (saved) {
+        this.earnings = JSON.parse(saved) as DriverEarnings;
+      }
+    } catch (error) {
+      this.errorMessage = 'No se pudieron leer las ganancias guardadas en este dispositivo.';
+      console.error('Error al leer el resumen local de ganancias.', error);
+    }
+  }
+
+  private recordEarning(tripId: number, amount?: number): void {
+    if (amount == null || this.earnings.tripIds.includes(tripId)) {
+      return;
+    }
+
+    const updated: DriverEarnings = {
+      tripIds: [...this.earnings.tripIds, tripId],
+      total: this.earnings.total + amount,
+    };
+    try {
+      localStorage.setItem(DRIVER_EARNINGS_KEY, JSON.stringify(updated));
+      this.earnings = updated;
+    } catch (error) {
+      this.infoMessage = 'Viaje finalizado, pero no se pudo guardar el resumen local de ganancias.';
+      console.error('Error al guardar el resumen local de ganancias.', error);
+    }
   }
 
   private startRequestPolling() {

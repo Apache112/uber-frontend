@@ -1,11 +1,14 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
+
+import { OfflineDataService } from './services/offline-data.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet],
+  imports: [CommonModule, IonApp, IonRouterOutlet],
 })
 export class AppComponent {
-  constructor() {}
+  readonly offline = inject(OfflineDataService);
 }

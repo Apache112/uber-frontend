@@ -7,9 +7,9 @@
 <ion-content class="ion-padding">
   <main class="dashboard-container">
     <section class="welcome">
-      <p class="eyebrow">UBER CONDUCTOR</p>
+      <p class="eyebrow">UBER CONDUCTOR · TU JORNADA</p>
       <h1>Tu jornada</h1>
-      <p>Conéctate para recibir solicitudes y gestionar tus viajes.</p>
+      <p>Conéctate, mantente al tanto y lleva el control de cada servicio.</p>
     </section>
 
     <ion-card>
@@ -25,6 +25,25 @@
         </div>
         <p class="hint" *ngIf="activeTrip">Finaliza el viaje activo antes de cambiar tu disponibilidad.</p>
         <p class="hint" *ngIf="locationMessage">{{ locationMessage }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="earnings-card">
+      <ion-card-content>
+        <p class="eyebrow">GANANCIAS Y CONTROL · ESTE DISPOSITIVO</p>
+        <div class="earnings-summary">
+          <div>
+            <span>Viajes finalizados</span>
+            <strong>{{ earnings.tripIds.length }}</strong>
+          </div>
+          <div>
+            <span>Total registrado</span>
+            <strong>{{ formatCurrency(earnings.total) }}</strong>
+          </div>
+        </div>
+        <p class="hint">
+          Resumen local de los viajes finalizados desde este navegador; no se sincroniza con el servidor.
+        </p>
       </ion-card-content>
     </ion-card>
 
@@ -104,6 +123,17 @@
       <ion-card-content>
         <h2>Conéctate para comenzar</h2>
         <p>Cuando estés en línea, aquí aparecerán las solicitudes de viaje disponibles.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="safety-card">
+      <ion-card-content>
+        <div>
+          <p class="eyebrow">SEGURIDAD</p>
+          <h2>¿Necesitas ayuda?</h2>
+          <p class="hint">En Colombia, llama a la línea de emergencias 123.</p>
+        </div>
+        <a class="emergency-link" href="tel:123" aria-label="Llamar a emergencias 123">Llamar al 123</a>
       </ion-card-content>
     </ion-card>
 

@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 export function apiErrorMessage(error: unknown, fallback: string): string {
   if (!(error instanceof HttpErrorResponse)) {
-    return fallback;
+    return error instanceof Error && error.message.trim() ? error.message : fallback;
   }
 
   const body: unknown = error.error;
