@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import type { OnDestroy, OnInit } from '@angular/core';
-import { Component, inject } from '@angular/core';
+import type { ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
@@ -17,6 +17,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import * as L from 'leaflet';
 
 import { environment } from '../../../environments/environment';
 import { apiErrorMessage } from '../../services/api-error';
@@ -50,6 +51,10 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private activeRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
+  private map?: L.Map;
+  private locationMarker?: L.CircleMarker;
+  private accuracyCircle?: L.Circle;
+  private mapElement?: HTMLDivElement;
 
   rideForm = {
     origin_name: '',
@@ -68,11 +73,23 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   isRequestingRide = false;
   isRefreshing = false;
   isCancelling = false;
-  mapUrl?: SafeResourceUrl;
   isTrackingLocation = false;
-  mapProvider: 'Google Maps' | 'OpenStreetMap' = environment.googleMapsApiKey ? 'Google Maps' : 'OpenStreetMap';
+  readonly googleMapsApiKey = environment.googleMapsApiKey.trim();
+  readonly mapProvider = this.googleMapsApiKey ? 'Google Maps' : 'OpenStreetMap';
+  googleMapUrl?: SafeResourceUrl;
   locationAccuracy?: number;
+  invoiceEmail = '';
   private lastMapUpdate?: { latitude: number; longitude: number; at: number };
+
+  @ViewChild('mapElement')
+  set mapContainer(element: ElementRef<HTMLDivElement> | undefined) {
+    this.mapElement = element?.nativeElement;
+    if (this.mapElement) {
+      this.initializeMap();
+    } else {
+      this.destroyMap();
+    }
+  }
 
   ngOnInit(): void {
     this.refreshActiveRide();
@@ -88,6 +105,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       clearInterval(this.activeRefreshTimer);
     }
     this.stopLocationWatch();
+    this.destroyMap();
   }
 
   estimateFare(): void {
@@ -214,13 +232,75 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.isTrackingLocation = false;
   }
 
+  gmailDraftUrl(): string {
+    if (!this.estimate) {
+      return 'https://mail.google.com/mail/';
+    }
+
+    const subject = `Cotización estimada de viaje - ${this.rideForm.origin_name} a ${this.rideForm.destination_name}`;
+    const body = [
+      'COTIZACIÓN ESTIMADA DE VIAJE',
+      '',
+      `Origen: ${this.rideForm.origin_name}`,
+      `Destino: ${this.rideForm.destination_name}`,
+      `Distancia aproximada: ${this.estimate.distance_km} km`,
+      `Duración aproximada: ${this.estimate.duration_min} min`,
+      `Tarifa estimada: ${this.formatCurrency(this.estimate.estimated_fare)}`,
+      `Fecha: ${new Date().toLocaleString('es-CO')}`,
+      '',
+      'Este documento es una cotización previa, no una factura tributaria ni un cobro.',
+      'La tarifa final se determina al completar el viaje.',
+    ].join('\n');
+
+    const params = new URLSearchParams({
+      view: 'cm',
+      fs: '1',
+      to: this.invoiceEmail.trim(),
+      su: subject,
+      body,
+    });
+    return `https://mail.google.com/mail/?${params.toString()}`;
+  }
+
+  updateGoogleMapFromOrigin(): void {
+    const latitude = this.rideForm.origin_latitude;
+    const longitude = this.rideForm.origin_longitude;
+    if (
+      latitude == null ||
+      longitude == null ||
+      !Number.isFinite(Number(latitude)) ||
+      !Number.isFinite(Number(longitude))
+    ) {
+      this.googleMapUrl = undefined;
+      return;
+    }
+    this.updateGoogleMapUrl(Number(latitude), Number(longitude));
+  }
+
   private updateCurrentPosition(position: GeolocationPosition): void {
     const { latitude, longitude, accuracy } = position.coords;
     this.rideForm.origin_latitude = latitude;
     this.rideForm.origin_longitude = longitude;
     this.locationAccuracy = accuracy;
-    this.updateMap(latitude, longitude);
+    this.updateGoogleMapUrl(latitude, longitude);
+    this.updateMap(latitude, longitude, accuracy);
     this.errorMessage = '';
+  }
+
+  private updateGoogleMapUrl(latitude: number, longitude: number): void {
+    if (!this.googleMapsApiKey) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      key: this.googleMapsApiKey,
+      q: `${latitude},${longitude}`,
+      center: `${latitude},${longitude}`,
+      zoom: '17',
+    });
+    this.googleMapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.google.com/maps/embed/v1/search?${params.toString()}`,
+    );
   }
 
   private handleLocationError(error: GeolocationPositionError, stopTracking = true): void {
@@ -240,46 +320,69 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
           : 'La ubicación tardó demasiado. Comprueba el GPS, los permisos y que la página use HTTPS.';
   }
 
-  private updateMap(latitude: number, longitude: number): void {
+  private updateMap(latitude: number, longitude: number, accuracy: number): void {
     const now = Date.now();
     const last = this.lastMapUpdate;
-    if (last && now - last.at < 10000 && this.distanceMeters(last.latitude, last.longitude, latitude, longitude) < 10) {
+    if (last && this.distanceMeters(last.latitude, last.longitude, latitude, longitude) < 5) {
+      this.locationMarker?.setLatLng([latitude, longitude]);
+      this.accuracyCircle?.setLatLng([latitude, longitude]).setRadius(accuracy);
       return;
     }
 
     this.lastMapUpdate = { latitude, longitude, at: now };
-    const key = environment.googleMapsApiKey.trim();
-    const url = key
-      ? this.googleMapsEmbedUrl(key, latitude, longitude)
-      : this.openStreetMapEmbedUrl(latitude, longitude);
-    this.mapProvider = key ? 'Google Maps' : 'OpenStreetMap';
-    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.initializeMap(latitude, longitude, accuracy);
   }
 
-  private googleMapsEmbedUrl(key: string, latitude: number, longitude: number): string {
-    const query = new URLSearchParams({
-      key,
-      center: `${latitude},${longitude}`,
-      zoom: '17',
-    });
-    return `https://www.google.com/maps/embed/v1/view?${query.toString()}`;
+  private initializeMap(latitude?: number, longitude?: number, accuracy?: number): void {
+    const currentLatitude = latitude ?? this.rideForm.origin_latitude;
+    const currentLongitude = longitude ?? this.rideForm.origin_longitude;
+    const currentAccuracy = accuracy ?? this.locationAccuracy;
+    if (!this.mapElement || currentLatitude == null || currentLongitude == null || currentAccuracy == null) {
+      return;
+    }
+
+    const position: L.LatLngExpression = [currentLatitude, currentLongitude];
+    if (!this.map) {
+      this.map = L.map(this.mapElement, {
+        center: position,
+        zoom: 15,
+        zoomControl: false,
+        scrollWheelZoom: false,
+      });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+      }).addTo(this.map);
+      L.control.zoom({ position: 'topright' }).addTo(this.map);
+      this.accuracyCircle = L.circle(position, {
+        radius: currentAccuracy,
+        color: '#3182ce',
+        weight: 1,
+        fillColor: '#3182ce',
+        fillOpacity: 0.12,
+      }).addTo(this.map);
+      this.locationMarker = L.circleMarker(position, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 4,
+        fillColor: '#1677ff',
+        fillOpacity: 1,
+      }).addTo(this.map);
+      this.locationMarker.bindTooltip('Tu ubicación', { direction: 'top', offset: [0, -8] });
+      requestAnimationFrame(() => this.map?.invalidateSize());
+      return;
+    }
+
+    this.locationMarker?.setLatLng(position);
+    this.accuracyCircle?.setLatLng(position).setRadius(currentAccuracy);
+    this.map.panTo(position, { animate: true, duration: 0.4 });
   }
 
-  private openStreetMapEmbedUrl(latitude: number, longitude: number): string {
-    const longitudeDelta = 0.008;
-    const latitudeDelta = 0.005;
-    const bounds = [
-      longitude - longitudeDelta,
-      latitude - latitudeDelta,
-      longitude + longitudeDelta,
-      latitude + latitudeDelta,
-    ].join(',');
-    const query = new URLSearchParams({
-      bbox: bounds,
-      layer: 'mapnik',
-      marker: `${latitude},${longitude}`,
-    });
-    return `https://www.openstreetmap.org/export/embed.html?${query.toString()}`;
+  private destroyMap(): void {
+    this.map?.remove();
+    this.map = undefined;
+    this.locationMarker = undefined;
+    this.accuracyCircle = undefined;
   }
 
   private distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {

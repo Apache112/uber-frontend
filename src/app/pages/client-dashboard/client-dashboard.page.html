@@ -36,6 +36,7 @@
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.origin_latitude"
+              (ngModelChange)="updateGoogleMapFromOrigin()"
               placeholder="4.6766"
             ></ion-input>
           </ion-item>
@@ -45,6 +46,7 @@
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.origin_longitude"
+              (ngModelChange)="updateGoogleMapFromOrigin()"
               placeholder="-74.0483"
             ></ion-input>
           </ion-item>
@@ -52,14 +54,23 @@
         <ion-button expand="block" fill="outline" (click)="useCurrentLocation()" [disabled]="isTrackingLocation">
           {{ isTrackingLocation ? 'Actualizando ubicación en vivo…' : 'Usar mi ubicación como origen' }}
         </ion-button>
-        <div class="map-frame" *ngIf="mapUrl">
+        <div class="map-frame" *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null">
           <iframe
-            [src]="mapUrl"
-            [title]="'Mapa de ' + mapProvider + ' con tu ubicación en tiempo real'"
+            *ngIf="googleMapUrl; else leafletMap"
+            [src]="googleMapUrl"
+            title="Mapa interactivo de Google con tu ubicación GPS"
             loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
+            referrerpolicy="no-referrer-when-downgrade"
             allowfullscreen
           ></iframe>
+          <ng-template #leafletMap>
+            <div
+              #mapElement
+              class="live-map"
+              role="region"
+              aria-label="Mapa interactivo con tu ubicación GPS en vivo"
+            ></div>
+          </ng-template>
           <div class="map-caption">
             <span class="live-dot"></span>
             <span>Ubicación GPS en vivo · {{ mapProvider }}</span>
@@ -72,7 +83,7 @@
         <ion-button *ngIf="isTrackingLocation" fill="clear" size="small" (click)="stopLocationWatch()">
           Detener seguimiento GPS
         </ion-button>
-        <p class="map-setup" *ngIf="isTrackingLocation && !mapUrl">
+        <p class="map-setup" *ngIf="isTrackingLocation && rideForm.origin_latitude == null">
           Esperando la ubicación del dispositivo. Activa el GPS y permite el acceso cuando el navegador lo solicite.
         </p>
 
@@ -114,6 +125,27 @@
           <h3>{{ formatCurrency(estimate.estimated_fare) }}</h3>
           <p>{{ estimate.distance_km }} km <span aria-hidden="true">·</span> {{ estimate.duration_min }} min aprox.</p>
           <small>El valor final puede variar según la duración y distancia reales.</small>
+          <div class="estimate-email">
+            <ion-item>
+              <ion-input
+                label="Correo para la cotización (opcional)"
+                labelPlacement="stacked"
+                type="email"
+                [(ngModel)]="invoiceEmail"
+                placeholder="tu@gmail.com"
+              ></ion-input>
+            </ion-item>
+            <ion-button
+              expand="block"
+              fill="outline"
+              [href]="gmailDraftUrl()"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir borrador en Gmail
+            </ion-button>
+            <small>Gmail abrirá un borrador para que lo revises y lo envíes. No se manda automáticamente.</small>
+          </div>
         </section>
 
         <ion-button expand="block" (click)="requestRide()" [disabled]="isRequestingRide">

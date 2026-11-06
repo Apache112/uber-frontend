@@ -110,10 +110,16 @@ ion-button {
   background: #edf4f6;
 }
 
+.live-map {
+  width: 100%;
+  height: 340px;
+  z-index: 0;
+}
+
 .map-frame iframe {
   display: block;
   width: 100%;
-  height: 280px;
+  height: 340px;
   border: 0;
 }
 
@@ -170,6 +176,19 @@ ion-button {
   color: #607d8b;
 }
 
+.estimate-email {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #d5e8e4;
+}
+
+.estimate-email ion-item {
+  --background: rgb(255 255 255 / 78%);
+  margin: 0;
+}
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -195,7 +214,7 @@ ion-button {
     border-radius: 22px;
   }
 
-  .map-frame iframe {
-    height: 230px;
+  .live-map {
+    height: 300px;
   }
 }
