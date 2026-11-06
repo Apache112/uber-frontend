@@ -66,6 +66,18 @@ describe('ClientDashboardPage', () => {
     expect(draftUrl.searchParams.get('body')).toContain('no una factura tributaria');
   });
 
+  it('opens Google Street View at the selected origin coordinates', () => {
+    component.rideForm.origin_latitude = 2.954648;
+    component.rideForm.origin_longitude = -75.285355;
+
+    const streetViewUrl = new URL(component.streetViewUrl());
+
+    expect(streetViewUrl.origin).toBe('https://www.google.com');
+    expect(streetViewUrl.searchParams.get('api')).toBe('1');
+    expect(streetViewUrl.searchParams.get('map_action')).toBe('pano');
+    expect(streetViewUrl.searchParams.get('viewpoint')).toBe('2.954648,-75.285355');
+  });
+
   it('uses the device GPS position to center the interactive map and set the ride origin', () => {
     const position = {
       coords: {

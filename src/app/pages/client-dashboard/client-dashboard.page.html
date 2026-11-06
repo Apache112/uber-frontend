@@ -80,6 +80,19 @@
           Posición: {{ rideForm.origin_latitude | number: '1.5-5' }}, {{ rideForm.origin_longitude | number: '1.5-5' }}
           <span *ngIf="locationAccuracy != null">· precisión aprox. ±{{ locationAccuracy | number: '1.0-0' }} m</span>
         </p>
+        <ion-button
+          *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null"
+          expand="block"
+          fill="outline"
+          [href]="streetViewUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Ver esta ubicación en Street View
+        </ion-button>
+        <p class="street-view-note" *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null">
+          Se abrirá Google Maps en otra pestaña. Street View depende de que haya imágenes disponibles para esta zona.
+        </p>
         <ion-button *ngIf="isTrackingLocation" fill="clear" size="small" (click)="stopLocationWatch()">
           Detener seguimiento GPS
         </ion-button>

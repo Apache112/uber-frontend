@@ -277,6 +277,21 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.updateGoogleMapUrl(Number(latitude), Number(longitude));
   }
 
+  streetViewUrl(): string {
+    const latitude = this.rideForm.origin_latitude;
+    const longitude = this.rideForm.origin_longitude;
+    if (latitude == null || longitude == null) {
+      return 'https://www.google.com/maps';
+    }
+
+    const params = new URLSearchParams({
+      api: '1',
+      map_action: 'pano',
+      viewpoint: `${latitude},${longitude}`,
+    });
+    return `https://www.google.com/maps/@?${params.toString()}`;
+  }
+
   private updateCurrentPosition(position: GeolocationPosition): void {
     const { latitude, longitude, accuracy } = position.coords;
     this.rideForm.origin_latitude = latitude;
