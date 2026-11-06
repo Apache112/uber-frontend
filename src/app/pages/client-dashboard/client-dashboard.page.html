@@ -55,22 +55,25 @@
         <div class="map-frame" *ngIf="mapUrl">
           <iframe
             [src]="mapUrl"
-            title="Mapa de Google con tu ubicación en tiempo real"
+            [title]="'Mapa de ' + mapProvider + ' con tu ubicación en tiempo real'"
             loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
           ></iframe>
           <div class="map-caption">
             <span class="live-dot"></span>
-            Ubicación en vivo
+            <span>Ubicación GPS en vivo · {{ mapProvider }}</span>
           </div>
         </div>
+        <p class="location-coordinates" *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null">
+          Posición: {{ rideForm.origin_latitude | number: '1.5-5' }}, {{ rideForm.origin_longitude | number: '1.5-5' }}
+          <span *ngIf="locationAccuracy != null">· precisión aprox. ±{{ locationAccuracy | number: '1.0-0' }} m</span>
+        </p>
         <ion-button *ngIf="isTrackingLocation" fill="clear" size="small" (click)="stopLocationWatch()">
           Detener seguimiento GPS
         </ion-button>
-        <p class="map-setup" *ngIf="mapConfigurationMissing && isTrackingLocation">
-          La ubicación GPS está activa, pero falta configurar una clave de Google Maps Embed API en la configuración
-          local para mostrar el mapa.
+        <p class="map-setup" *ngIf="isTrackingLocation && !mapUrl">
+          Esperando la ubicación del dispositivo. Activa el GPS y permite el acceso cuando el navegador lo solicite.
         </p>
 
         <ion-list lines="none">

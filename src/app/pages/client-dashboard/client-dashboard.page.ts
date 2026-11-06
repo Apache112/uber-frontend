@@ -70,7 +70,8 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   isCancelling = false;
   mapUrl?: SafeResourceUrl;
   isTrackingLocation = false;
-  mapConfigurationMissing = !environment.googleMapsApiKey;
+  mapProvider: 'Google Maps' | 'OpenStreetMap' = environment.googleMapsApiKey ? 'Google Maps' : 'OpenStreetMap';
+  locationAccuracy?: number;
   private lastMapUpdate?: { latitude: number; longitude: number; at: number };
 
   ngOnInit(): void {
@@ -193,22 +194,15 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     }
 
     this.isTrackingLocation = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => this.updateCurrentPosition(position),
+      (error) => this.handleLocationError(error, false),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
+    );
     this.locationWatchId = navigator.geolocation.watchPosition(
-      ({ coords }) => {
-        this.rideForm.origin_latitude = coords.latitude;
-        this.rideForm.origin_longitude = coords.longitude;
-        this.updateMap(coords.latitude, coords.longitude);
-        this.errorMessage = '';
-      },
-      (error) => {
-        this.isTrackingLocation = false;
-        this.locationWatchId = undefined;
-        this.errorMessage =
-          error.code === error.PERMISSION_DENIED
-            ? 'Permite el acceso a tu ubicación para mostrar el mapa en tiempo real.'
-            : 'No se pudo obtener tu ubicación. Revisa el GPS y los permisos del navegador.';
-      },
-      { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 },
+      (position) => this.updateCurrentPosition(position),
+      (error) => this.handleLocationError(error),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
     );
   }
 
@@ -220,30 +214,72 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.isTrackingLocation = false;
   }
 
+  private updateCurrentPosition(position: GeolocationPosition): void {
+    const { latitude, longitude, accuracy } = position.coords;
+    this.rideForm.origin_latitude = latitude;
+    this.rideForm.origin_longitude = longitude;
+    this.locationAccuracy = accuracy;
+    this.updateMap(latitude, longitude);
+    this.errorMessage = '';
+  }
+
+  private handleLocationError(error: GeolocationPositionError, stopTracking = true): void {
+    if (stopTracking) {
+      this.isTrackingLocation = false;
+      if (this.locationWatchId != null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(this.locationWatchId);
+        this.locationWatchId = undefined;
+      }
+    }
+
+    this.errorMessage =
+      error.code === error.PERMISSION_DENIED
+        ? 'Permite el acceso a la ubicación en el navegador para mostrar tu posición real.'
+        : error.code === error.POSITION_UNAVAILABLE
+          ? 'El dispositivo no pudo determinar la ubicación. Activa el GPS y prueba al aire libre.'
+          : 'La ubicación tardó demasiado. Comprueba el GPS, los permisos y que la página use HTTPS.';
+  }
+
   private updateMap(latitude: number, longitude: number): void {
     const now = Date.now();
     const last = this.lastMapUpdate;
-    if (last && now - last.at < 15000 && this.distanceMeters(last.latitude, last.longitude, latitude, longitude) < 25) {
+    if (last && now - last.at < 10000 && this.distanceMeters(last.latitude, last.longitude, latitude, longitude) < 10) {
       return;
     }
 
     this.lastMapUpdate = { latitude, longitude, at: now };
     const key = environment.googleMapsApiKey.trim();
-    if (!key) {
-      this.mapUrl = undefined;
-      this.mapConfigurationMissing = true;
-      return;
-    }
+    const url = key
+      ? this.googleMapsEmbedUrl(key, latitude, longitude)
+      : this.openStreetMapEmbedUrl(latitude, longitude);
+    this.mapProvider = key ? 'Google Maps' : 'OpenStreetMap';
+    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
+  private googleMapsEmbedUrl(key: string, latitude: number, longitude: number): string {
     const query = new URLSearchParams({
       key,
-      q: `${latitude},${longitude}`,
-      zoom: '16',
+      center: `${latitude},${longitude}`,
+      zoom: '17',
     });
-    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.google.com/maps/embed/v1/place?${query.toString()}`,
-    );
-    this.mapConfigurationMissing = false;
+    return `https://www.google.com/maps/embed/v1/view?${query.toString()}`;
+  }
+
+  private openStreetMapEmbedUrl(latitude: number, longitude: number): string {
+    const longitudeDelta = 0.008;
+    const latitudeDelta = 0.005;
+    const bounds = [
+      longitude - longitudeDelta,
+      latitude - latitudeDelta,
+      longitude + longitudeDelta,
+      latitude + latitudeDelta,
+    ].join(',');
+    const query = new URLSearchParams({
+      bbox: bounds,
+      layer: 'mapnik',
+      marker: `${latitude},${longitude}`,
+    });
+    return `https://www.openstreetmap.org/export/embed.html?${query.toString()}`;
   }
 
   private distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
