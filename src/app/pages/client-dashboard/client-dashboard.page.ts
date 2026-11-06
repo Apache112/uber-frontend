@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import { Component, inject } from '@angular/core';
-import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import {
   IonButton,
@@ -18,10 +18,10 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 
+import { environment } from '../../../environments/environment';
 import { apiErrorMessage } from '../../services/api-error';
 import type { ClientActiveResponse, RideEstimate, RideRequestPayload } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-client-dashboard',

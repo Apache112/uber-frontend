@@ -57,7 +57,7 @@
             [src]="mapUrl"
             title="Mapa de Google con tu ubicación en tiempo real"
             loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
+            referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
           ></iframe>
           <div class="map-caption">
@@ -68,7 +68,7 @@
         <ion-button *ngIf="isTrackingLocation" fill="clear" size="small" (click)="stopLocationWatch()">
           Detener seguimiento GPS
         </ion-button>
-        <p class="map-setup" *ngIf="mapConfigurationMissing">
+        <p class="map-setup" *ngIf="mapConfigurationMissing && isTrackingLocation">
           La ubicación GPS está activa, pero falta configurar una clave de Google Maps Embed API en la configuración
           local para mostrar el mapa.
         </p>
