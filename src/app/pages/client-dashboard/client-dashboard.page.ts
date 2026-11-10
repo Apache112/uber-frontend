@@ -57,6 +57,12 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   private routeLine?: L.Polyline;
   private accuracyCircle?: L.Circle;
   private mapElement?: HTMLDivElement;
+  private activeRouteMap?: L.Map;
+  private activeRouteMapElement?: HTMLDivElement;
+  private activeOriginMarker?: L.CircleMarker;
+  private activeDestinationMarker?: L.CircleMarker;
+  private activeDriverMarker?: L.CircleMarker;
+  private activeRouteLine?: L.Polyline;
 
   rideForm = {
     origin_name: '',
@@ -93,6 +99,16 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     }
   }
 
+  @ViewChild('activeRouteMap')
+  set activeRouteMapContainer(element: ElementRef<HTMLDivElement> | undefined) {
+    this.activeRouteMapElement = element?.nativeElement;
+    if (this.activeRouteMapElement) {
+      this.initializeActiveRouteMap();
+    } else {
+      this.destroyActiveRouteMap();
+    }
+  }
+
   ngOnInit(): void {
     this.refreshActiveRide();
     this.activeRefreshTimer = setInterval(() => {
@@ -102,12 +118,33 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     }, 15000);
   }
 
+  hasActiveRouteCoordinates(ride: NonNullable<ClientActiveResponse['data']>): ride is NonNullable<
+    ClientActiveResponse['data']
+  > & {
+    origin_latitude: number;
+    origin_longitude: number;
+    destination_latitude: number;
+    destination_longitude: number;
+  } {
+    return (
+      ride.origin_latitude != null &&
+      ride.origin_longitude != null &&
+      ride.destination_latitude != null &&
+      ride.destination_longitude != null &&
+      Number.isFinite(ride.origin_latitude) &&
+      Number.isFinite(ride.origin_longitude) &&
+      Number.isFinite(ride.destination_latitude) &&
+      Number.isFinite(ride.destination_longitude)
+    );
+  }
+
   ngOnDestroy(): void {
     if (this.activeRefreshTimer) {
       clearInterval(this.activeRefreshTimer);
     }
     this.stopLocationWatch();
     this.destroyMap();
+    this.destroyActiveRouteMap();
   }
 
   estimateFare(): void {
@@ -177,6 +214,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         if (response.data) {
           this.applyRideCoordinates(response.data);
         }
+        this.updateActiveRouteMap();
         this.isRefreshing = false;
       },
       error: (error: unknown) => {
@@ -490,6 +528,111 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.destinationMarker = undefined;
     this.routeLine = undefined;
     this.accuracyCircle = undefined;
+  }
+
+  private initializeActiveRouteMap(): void {
+    const ride = this.activeRide?.data;
+    if (!this.activeRouteMapElement || !ride || !this.hasActiveRouteCoordinates(ride)) {
+      return;
+    }
+
+    const origin: L.LatLngExpression = [ride.origin_latitude, ride.origin_longitude];
+    const destination: L.LatLngExpression = [ride.destination_latitude, ride.destination_longitude];
+    if (!this.activeRouteMap) {
+      this.activeRouteMap = L.map(this.activeRouteMapElement, {
+        center: origin,
+        zoom: 13,
+        zoomControl: true,
+        scrollWheelZoom: false,
+      });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+      }).addTo(this.activeRouteMap);
+      this.activeOriginMarker = L.circleMarker(origin, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#1677ff',
+        fillOpacity: 1,
+      })
+        .addTo(this.activeRouteMap)
+        .bindTooltip('Origen', { direction: 'top', offset: [0, -8] });
+      this.activeDestinationMarker = L.circleMarker(destination, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#e44747',
+        fillOpacity: 1,
+      })
+        .addTo(this.activeRouteMap)
+        .bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
+      this.activeRouteLine = L.polyline([origin, destination], {
+        color: '#1677ff',
+        weight: 5,
+        opacity: 0.8,
+      }).addTo(this.activeRouteMap);
+
+      const bounds = this.activeRouteLine.getBounds();
+      const driverLocation = ride.driver?.latest_location;
+      if (driverLocation && this.hasValidLocation(driverLocation.latitude, driverLocation.longitude)) {
+        this.activeDriverMarker = this.createDriverMarker(driverLocation, this.activeRouteMap);
+        bounds.extend([driverLocation.latitude, driverLocation.longitude]);
+      }
+      this.activeRouteMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 15 });
+      requestAnimationFrame(() => this.activeRouteMap?.invalidateSize());
+      return;
+    }
+
+    this.activeOriginMarker?.setLatLng(origin);
+    this.activeDestinationMarker?.setLatLng(destination);
+    this.activeRouteLine?.setLatLngs([origin, destination]);
+    this.updateActiveDriverMarker(ride.driver?.latest_location);
+  }
+
+  private updateActiveRouteMap(): void {
+    if (this.activeRouteMapElement) {
+      this.initializeActiveRouteMap();
+    }
+  }
+
+  private updateActiveDriverMarker(location?: { latitude: number; longitude: number }): void {
+    if (!location || !this.hasValidLocation(location.latitude, location.longitude)) {
+      this.activeDriverMarker?.remove();
+      this.activeDriverMarker = undefined;
+      return;
+    }
+
+    if (this.activeDriverMarker) {
+      this.activeDriverMarker.setLatLng([location.latitude, location.longitude]);
+    } else if (this.activeRouteMap) {
+      this.activeDriverMarker = this.createDriverMarker(location, this.activeRouteMap);
+    }
+  }
+
+  private createDriverMarker(location: { latitude: number; longitude: number }, map: L.Map): L.CircleMarker {
+    return L.circleMarker([location.latitude, location.longitude], {
+      radius: 10,
+      color: '#ffffff',
+      weight: 3,
+      fillColor: '#16a085',
+      fillOpacity: 1,
+    })
+      .addTo(map)
+      .bindTooltip('Conductor', { direction: 'top', offset: [0, -8] });
+  }
+
+  private hasValidLocation(latitude: number, longitude: number): boolean {
+    return Number.isFinite(latitude) && Number.isFinite(longitude);
+  }
+
+  private destroyActiveRouteMap(): void {
+    this.activeRouteMap?.remove();
+    this.activeRouteMap = undefined;
+    this.activeOriginMarker = undefined;
+    this.activeDestinationMarker = undefined;
+    this.activeDriverMarker = undefined;
+    this.activeRouteLine = undefined;
   }
 
   private distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {

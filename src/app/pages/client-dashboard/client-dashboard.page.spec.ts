@@ -47,6 +47,59 @@ describe('ClientDashboardPage', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows the active ride route and driver location on the map', () => {
+    const map = {
+      fitBounds: vi.fn(),
+      invalidateSize: vi.fn(),
+      remove: vi.fn(),
+    };
+    const marker = {
+      addTo: vi.fn().mockReturnThis(),
+      bindTooltip: vi.fn().mockReturnThis(),
+      setLatLng: vi.fn().mockReturnThis(),
+    };
+    const routeLine = {
+      addTo: vi.fn().mockReturnThis(),
+      getBounds: vi.fn().mockReturnValue({ extend: vi.fn() }),
+    };
+    leafletMocks.map.mockReturnValue(map as unknown as L.Map);
+    leafletMocks.tileLayer.mockReturnValue({ addTo: vi.fn().mockReturnThis() } as unknown as L.TileLayer);
+    leafletMocks.circleMarker.mockReturnValue(marker as unknown as L.CircleMarker);
+    leafletMocks.polyline.mockReturnValue(routeLine as unknown as L.Polyline);
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+
+    component.activeRide = {
+      has_active: true,
+      type: 'trip',
+      data: {
+        id: 1,
+        status: 'assigned',
+        origin_latitude: 4.65,
+        origin_longitude: -74.05,
+        destination_latitude: 4.7,
+        destination_longitude: -74.1,
+        estimated_duration_min: 25,
+        driver: { latest_location: { latitude: 4.66, longitude: -74.06 } },
+      },
+    };
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[aria-label*="Mapa del viaje activo"]')).toBeTruthy();
+    expect(leafletMocks.map).toHaveBeenCalledOnce();
+    expect(leafletMocks.circleMarker).toHaveBeenCalledTimes(3);
+    expect(leafletMocks.polyline).toHaveBeenCalledWith(
+      [
+        [4.65, -74.05],
+        [4.7, -74.1],
+      ],
+      expect.objectContaining({ color: '#1677ff' }),
+    );
+    expect(map.fitBounds).toHaveBeenCalledOnce();
+  });
+
   it('creates a Gmail draft with the estimated ride details', () => {
     component.rideForm.origin_name = 'Neiva';
     component.rideForm.destination_name = 'Bogotá';
@@ -150,7 +203,10 @@ describe('ClientDashboardPage', () => {
       expect.objectContaining({ fillColor: '#1677ff' }),
     );
     expect(leafletMocks.polyline).toHaveBeenCalledWith(
-      [[position.coords.latitude, position.coords.longitude], [2.96, -75.29]],
+      [
+        [position.coords.latitude, position.coords.longitude],
+        [2.96, -75.29],
+      ],
       expect.objectContaining({ color: '#1677ff' }),
     );
     expect(map.fitBounds).toHaveBeenCalledOnce();

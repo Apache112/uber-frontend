@@ -74,8 +74,8 @@
           <div class="map-caption">
             <span class="live-dot"></span>
             <span>
-              {{ rideForm.destination_latitude != null && rideForm.destination_longitude != null ? 'Ruta seleccionada' : 'Ubicación GPS en vivo' }}
-              · {{ mapProvider }}
+              {{ rideForm.destination_latitude != null && rideForm.destination_longitude != null ? 'Ruta seleccionada' :
+              'Ubicación GPS en vivo' }} · {{ mapProvider }}
             </span>
           </div>
         </div>
@@ -199,10 +199,37 @@
         <p *ngIf="ride.origin_name"><strong>Origen:</strong> {{ ride.origin_name }}</p>
         <p *ngIf="ride.destination_name"><strong>Destino:</strong> {{ ride.destination_name }}</p>
         <p *ngIf="ride.estimated_fare"><strong>Tarifa estimada:</strong> {{ formatCurrency(ride.estimated_fare) }}</p>
-        <p *ngIf="ride.estimated_distance_km != null"><strong>Distancia:</strong> {{ ride.estimated_distance_km }} km</p>
+        <p *ngIf="ride.estimated_distance_km != null">
+          <strong>Distancia:</strong> {{ ride.estimated_distance_km }} km
+        </p>
         <p *ngIf="ride.estimated_duration_min != null">
           <strong>Duración aproximada:</strong> {{ ride.estimated_duration_min }} min
         </p>
+        <div class="map-frame" *ngIf="hasActiveRouteCoordinates(ride)">
+          <div
+            #activeRouteMap
+            class="live-map"
+            role="region"
+            aria-label="Mapa del viaje activo con el origen, el destino y la ubicación del conductor"
+          ></div>
+          <p class="map-caption">
+            Ruta estimada
+            <ng-container *ngIf="ride.driver?.latest_location"> · Ubicación del conductor actualizada</ng-container>
+          </p>
+        </div>
+        <p class="map-setup" *ngIf="!hasActiveRouteCoordinates(ride)">
+          El mapa estará disponible cuando la solicitud incluya las coordenadas del origen y el destino.
+        </p>
+        <ion-button
+          *ngIf="hasActiveRouteCoordinates(ride)"
+          expand="block"
+          fill="outline"
+          [href]="directionsUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir ruta en Google Maps
+        </ion-button>
         <ng-container *ngIf="ride.driver">
           <p *ngIf="ride.driver.user?.name"><strong>Conductor:</strong> {{ ride.driver.user.name }}</p>
           <p *ngIf="ride.driver.user?.phone"><strong>Teléfono:</strong> {{ ride.driver.user.phone }}</p>
