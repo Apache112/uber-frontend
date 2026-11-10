@@ -25,4 +25,21 @@ describe('apiErrorMessage', () => {
 
     expect(apiErrorMessage(error, 'Fallback')).toContain('El servidor rechazó');
   });
+
+  it('shows field details from a FastAPI-style validation response', () => {
+    const error = new HttpErrorResponse({
+      status: 422,
+      error: {
+        detail: [
+          {
+            loc: ['body', 'license_number'],
+            msg: 'Field required',
+            type: 'missing',
+          },
+        ],
+      },
+    });
+
+    expect(apiErrorMessage(error, 'Fallback')).toBe('license_number: Field required');
+  });
 });
