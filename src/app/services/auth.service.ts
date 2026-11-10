@@ -61,14 +61,6 @@ export class AuthService {
     );
   }
 
-  loginLocal(credentials: { login: string; password: string }): Observable<AuthResponse> {
-    return defer(() => from(this.offline.login(credentials))).pipe(tap((response) => this.storeSession(response)));
-  }
-
-  registerLocal(userData: RegisterPayload): Observable<AuthResponse> {
-    return defer(() => from(this.offline.register(userData))).pipe(tap((response) => this.storeSession(response)));
-  }
-
   logout(): Observable<{ success: boolean; message?: string }> {
     if (this.offline.isLocalSession()) {
       this.offline.setOfflineMode(true);

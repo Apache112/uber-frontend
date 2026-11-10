@@ -3,7 +3,7 @@ import type { ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import {
   IonButton,
   IonCard,
@@ -23,7 +23,6 @@ import { environment } from '../../../environments/environment';
 import { apiErrorMessage } from '../../services/api-error';
 import type { ClientActiveResponse, RideEstimate, RideRequestPayload } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -49,8 +48,6 @@ import { AuthService } from '../../services/auth.service';
 })
 export class ClientDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
-  private auth = inject(AuthService);
-  private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
   private activeRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
@@ -433,15 +430,6 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       cancelled: 'Cancelado',
     };
     return status ? labels[status] || status : 'Estado no disponible';
-  }
-
-  logout(): void {
-    this.auth.logout().subscribe({
-      next: () => void this.router.navigate(['/login']),
-      error: (error: unknown) => {
-        this.errorMessage = apiErrorMessage(error, 'No se pudo cerrar la sesión.');
-      },
-    });
   }
 
   private hasValidCoordinates() {

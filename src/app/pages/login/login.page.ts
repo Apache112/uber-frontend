@@ -53,28 +53,15 @@ export class LoginPage {
   onLogin(): void {
     this.authService.login(this.loginData).subscribe({
       next: (res) => {
-        this.navigateForRole(res.user.role);
+        if (res.user.role === 'client') {
+          this.router.navigate(['/client-dashboard']);
+        } else if (res.user.role === 'driver') {
+          this.router.navigate(['/driver-dashboard']);
+        }
       },
       error: (err) => {
         this.errorMessage = apiErrorMessage(err, 'Error al iniciar sesión');
       },
     });
-  }
-
-  onLocalLogin(): void {
-    this.authService.loginLocal(this.loginData).subscribe({
-      next: (response) => this.navigateForRole(response.user.role),
-      error: (error: unknown) => {
-        this.errorMessage = apiErrorMessage(error, 'No se pudo iniciar sesión con una cuenta local.');
-      },
-    });
-  }
-
-  private navigateForRole(role: string): void {
-    if (role === 'client') {
-      void this.router.navigate(['/client-dashboard']);
-    } else if (role === 'driver') {
-      void this.router.navigate(['/driver-dashboard']);
-    }
   }
 }

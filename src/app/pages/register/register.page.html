@@ -136,12 +136,6 @@
       <ion-button expand="block" (click)="onRegister()" [disabled]="isSubmitting">
         {{ isSubmitting ? 'Creando cuenta...' : 'Registrarme' }}
       </ion-button>
-      <ion-button expand="block" fill="outline" (click)="onRegisterLocal()" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Creando cuenta...' : 'Crear cuenta local de prueba' }}
-      </ion-button>
-      <p class="local-mode-note">
-        La cuenta local solo existe en este navegador. No se sincroniza con el backend ni con otros dispositivos.
-      </p>
       <ion-button expand="block" fill="clear" [routerLink]="['/login']"> Ya tengo cuenta </ion-button>
     </div>
   </div>
