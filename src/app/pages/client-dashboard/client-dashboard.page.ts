@@ -53,6 +53,8 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
   private locationWatchId?: number;
   private map?: L.Map;
   private locationMarker?: L.CircleMarker;
+  private destinationMarker?: L.CircleMarker;
+  private routeLine?: L.Polyline;
   private accuracyCircle?: L.Circle;
   private mapElement?: HTMLDivElement;
 
@@ -152,6 +154,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
           type: 'request',
           data: response.ride_request,
         };
+        this.applyRideCoordinates(response.ride_request);
         this.estimate = undefined;
         this.isRequestingRide = false;
       },
@@ -171,6 +174,9 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.api.getClientActive().subscribe({
       next: (response) => {
         this.activeRide = response;
+        if (response.data) {
+          this.applyRideCoordinates(response.data);
+        }
         this.isRefreshing = false;
       },
       error: (error: unknown) => {
@@ -272,9 +278,20 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       !Number.isFinite(Number(longitude))
     ) {
       this.googleMapUrl = undefined;
+      this.updateRouteMap();
       return;
     }
     this.updateGoogleMapUrl(Number(latitude), Number(longitude));
+    this.updateRouteMap();
+  }
+
+  updateRouteMap(): void {
+    if (!this.map) {
+      this.initializeMap();
+      return;
+    }
+
+    this.syncRouteLayers(true);
   }
 
   streetViewUrl(): string {
@@ -352,7 +369,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     const currentLatitude = latitude ?? this.rideForm.origin_latitude;
     const currentLongitude = longitude ?? this.rideForm.origin_longitude;
     const currentAccuracy = accuracy ?? this.locationAccuracy;
-    if (!this.mapElement || currentLatitude == null || currentLongitude == null || currentAccuracy == null) {
+    if (!this.mapElement || currentLatitude == null || currentLongitude == null) {
       return;
     }
 
@@ -369,13 +386,15 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
       }).addTo(this.map);
       L.control.zoom({ position: 'topright' }).addTo(this.map);
-      this.accuracyCircle = L.circle(position, {
-        radius: currentAccuracy,
-        color: '#3182ce',
-        weight: 1,
-        fillColor: '#3182ce',
-        fillOpacity: 0.12,
-      }).addTo(this.map);
+      if (currentAccuracy != null) {
+        this.accuracyCircle = L.circle(position, {
+          radius: currentAccuracy,
+          color: '#3182ce',
+          weight: 1,
+          fillColor: '#3182ce',
+          fillOpacity: 0.12,
+        }).addTo(this.map);
+      }
       this.locationMarker = L.circleMarker(position, {
         radius: 9,
         color: '#ffffff',
@@ -384,19 +403,92 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         fillOpacity: 1,
       }).addTo(this.map);
       this.locationMarker.bindTooltip('Tu ubicación', { direction: 'top', offset: [0, -8] });
+      this.syncRouteLayers(true);
       requestAnimationFrame(() => this.map?.invalidateSize());
       return;
     }
 
     this.locationMarker?.setLatLng(position);
-    this.accuracyCircle?.setLatLng(position).setRadius(currentAccuracy);
+    if (currentAccuracy != null) {
+      if (this.accuracyCircle) {
+        this.accuracyCircle.setLatLng(position).setRadius(currentAccuracy);
+      } else {
+        this.accuracyCircle = L.circle(position, {
+          radius: currentAccuracy,
+          color: '#3182ce',
+          weight: 1,
+          fillColor: '#3182ce',
+          fillOpacity: 0.12,
+        }).addTo(this.map);
+      }
+    }
     this.map.panTo(position, { animate: true, duration: 0.4 });
+    this.syncRouteLayers();
+  }
+
+  private syncRouteLayers(fitRoute = false): void {
+    if (!this.map) {
+      return;
+    }
+
+    const originLatitude = Number(this.rideForm.origin_latitude);
+    const originLongitude = Number(this.rideForm.origin_longitude);
+    const destinationLatitude = Number(this.rideForm.destination_latitude);
+    const destinationLongitude = Number(this.rideForm.destination_longitude);
+    const hasRoute =
+      this.rideForm.origin_latitude != null &&
+      this.rideForm.origin_longitude != null &&
+      this.rideForm.destination_latitude != null &&
+      this.rideForm.destination_longitude != null &&
+      Number.isFinite(originLatitude) &&
+      Number.isFinite(originLongitude) &&
+      Number.isFinite(destinationLatitude) &&
+      Number.isFinite(destinationLongitude);
+
+    if (!hasRoute) {
+      this.destinationMarker?.remove();
+      this.destinationMarker = undefined;
+      this.routeLine?.remove();
+      this.routeLine = undefined;
+      return;
+    }
+
+    const origin: L.LatLngExpression = [originLatitude, originLongitude];
+    const destination: L.LatLngExpression = [destinationLatitude, destinationLongitude];
+    if (!this.destinationMarker) {
+      this.destinationMarker = L.circleMarker(destination, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#e44747',
+        fillOpacity: 1,
+      }).addTo(this.map);
+      this.destinationMarker.bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
+    } else {
+      this.destinationMarker.setLatLng(destination);
+    }
+
+    if (!this.routeLine) {
+      this.routeLine = L.polyline([origin, destination], {
+        color: '#1677ff',
+        weight: 5,
+        opacity: 0.8,
+      }).addTo(this.map);
+    } else {
+      this.routeLine.setLatLngs([origin, destination]);
+    }
+
+    if (fitRoute) {
+      this.map.fitBounds(this.routeLine.getBounds(), { padding: [36, 36], maxZoom: 15 });
+    }
   }
 
   private destroyMap(): void {
     this.map?.remove();
     this.map = undefined;
     this.locationMarker = undefined;
+    this.destinationMarker = undefined;
+    this.routeLine = undefined;
     this.accuracyCircle = undefined;
   }
 
@@ -418,6 +510,16 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
           currency: 'COP',
           maximumFractionDigits: 0,
         }).format(amount);
+  }
+
+  directionsUrl(): string {
+    const params = new URLSearchParams({
+      api: '1',
+      origin: `${this.rideForm.origin_latitude},${this.rideForm.origin_longitude}`,
+      destination: `${this.rideForm.destination_latitude},${this.rideForm.destination_longitude}`,
+      travelmode: 'driving',
+    });
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
   }
 
   statusLabel(status?: string): string {
@@ -444,6 +546,25 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       this.rideForm.destination_name.trim().length > 0 &&
       values.every((value) => value != null && Number.isFinite(Number(value)))
     );
+  }
+
+  private applyRideCoordinates(ride: NonNullable<ClientActiveResponse['data']>): void {
+    if (
+      ride.origin_latitude == null ||
+      ride.origin_longitude == null ||
+      ride.destination_latitude == null ||
+      ride.destination_longitude == null
+    ) {
+      return;
+    }
+
+    this.rideForm.origin_name = ride.origin_name || this.rideForm.origin_name;
+    this.rideForm.origin_latitude = ride.origin_latitude;
+    this.rideForm.origin_longitude = ride.origin_longitude;
+    this.rideForm.destination_name = ride.destination_name || this.rideForm.destination_name;
+    this.rideForm.destination_latitude = ride.destination_latitude;
+    this.rideForm.destination_longitude = ride.destination_longitude;
+    this.updateRouteMap();
   }
 
   private coordinates() {

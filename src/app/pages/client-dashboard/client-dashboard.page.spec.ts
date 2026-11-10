@@ -11,6 +11,7 @@ const leafletMocks = vi.hoisted(() => ({
   zoom: vi.fn(),
   circle: vi.fn(),
   circleMarker: vi.fn(),
+  polyline: vi.fn(),
 }));
 
 vi.mock('leaflet', () => ({
@@ -79,6 +80,8 @@ describe('ClientDashboardPage', () => {
   });
 
   it('uses the device GPS position to center the interactive map and set the ride origin', () => {
+    component.rideForm.destination_latitude = 2.96;
+    component.rideForm.destination_longitude = -75.29;
     const position = {
       coords: {
         latitude: 2.956725,
@@ -100,7 +103,13 @@ describe('ClientDashboardPage', () => {
       addTo: vi.fn().mockReturnThis(),
       invalidateSize: vi.fn(),
       panTo: vi.fn(),
+      fitBounds: vi.fn(),
       remove: vi.fn(),
+    };
+    const routeLine = {
+      addTo: vi.fn().mockReturnThis(),
+      getBounds: vi.fn().mockReturnValue({}),
+      setLatLngs: vi.fn(),
     };
     const tileLayer = { addTo: vi.fn().mockReturnThis() };
     const zoomControl = { addTo: vi.fn() };
@@ -109,6 +118,7 @@ describe('ClientDashboardPage', () => {
     leafletMocks.zoom.mockReturnValue(zoomControl as unknown as L.Control.Zoom);
     leafletMocks.circle.mockReturnValue(circle as unknown as L.Circle);
     leafletMocks.circleMarker.mockReturnValue(marker as unknown as L.CircleMarker);
+    leafletMocks.polyline.mockReturnValue(routeLine as unknown as L.Polyline);
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
@@ -139,6 +149,11 @@ describe('ClientDashboardPage', () => {
       [position.coords.latitude, position.coords.longitude],
       expect.objectContaining({ fillColor: '#1677ff' }),
     );
+    expect(leafletMocks.polyline).toHaveBeenCalledWith(
+      [[position.coords.latitude, position.coords.longitude], [2.96, -75.29]],
+      expect.objectContaining({ color: '#1677ff' }),
+    );
+    expect(map.fitBounds).toHaveBeenCalledOnce();
     expect(watchPosition).toHaveBeenCalledOnce();
   });
 });

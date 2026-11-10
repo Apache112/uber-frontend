@@ -73,9 +73,27 @@
           </ng-template>
           <div class="map-caption">
             <span class="live-dot"></span>
-            <span>Ubicación GPS en vivo · {{ mapProvider }}</span>
+            <span>
+              {{ rideForm.destination_latitude != null && rideForm.destination_longitude != null ? 'Ruta seleccionada' : 'Ubicación GPS en vivo' }}
+              · {{ mapProvider }}
+            </span>
           </div>
         </div>
+        <ion-button
+          *ngIf="
+            rideForm.origin_latitude != null &&
+            rideForm.origin_longitude != null &&
+            rideForm.destination_latitude != null &&
+            rideForm.destination_longitude != null
+          "
+          expand="block"
+          fill="outline"
+          [href]="directionsUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir ruta para conducir en Google Maps
+        </ion-button>
         <p class="location-coordinates" *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null">
           Posición: {{ rideForm.origin_latitude | number: '1.5-5' }}, {{ rideForm.origin_longitude | number: '1.5-5' }}
           <span *ngIf="locationAccuracy != null">· precisión aprox. ±{{ locationAccuracy | number: '1.0-0' }} m</span>
@@ -115,6 +133,7 @@
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.destination_latitude"
+              (ngModelChange)="updateRouteMap()"
               placeholder="4.6664"
             ></ion-input>
           </ion-item>
@@ -124,6 +143,7 @@
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.destination_longitude"
+              (ngModelChange)="updateRouteMap()"
               placeholder="-74.0536"
             ></ion-input>
           </ion-item>
@@ -179,6 +199,10 @@
         <p *ngIf="ride.origin_name"><strong>Origen:</strong> {{ ride.origin_name }}</p>
         <p *ngIf="ride.destination_name"><strong>Destino:</strong> {{ ride.destination_name }}</p>
         <p *ngIf="ride.estimated_fare"><strong>Tarifa estimada:</strong> {{ formatCurrency(ride.estimated_fare) }}</p>
+        <p *ngIf="ride.estimated_distance_km != null"><strong>Distancia:</strong> {{ ride.estimated_distance_km }} km</p>
+        <p *ngIf="ride.estimated_duration_min != null">
+          <strong>Duración aproximada:</strong> {{ ride.estimated_duration_min }} min
+        </p>
         <ng-container *ngIf="ride.driver">
           <p *ngIf="ride.driver.user?.name"><strong>Conductor:</strong> {{ ride.driver.user.name }}</p>
           <p *ngIf="ride.driver.user?.phone"><strong>Teléfono:</strong> {{ ride.driver.user.phone }}</p>

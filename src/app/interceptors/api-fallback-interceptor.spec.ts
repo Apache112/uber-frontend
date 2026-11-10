@@ -24,19 +24,20 @@ describe('apiFallbackInterceptor', () => {
     httpTestingController.verify();
   });
 
-  it('retries API requests against localhost after a network error', () => {
-    let response: { ok: boolean } | undefined;
+  it('does not retry a same-origin API request against the client device after a network error', () => {
+    let errorStatus: number | undefined;
 
-    http.get<{ ok: boolean }>(`${environment.apiUrl}/health`).subscribe((value) => {
-      response = value;
+    http.get<{ ok: boolean }>(`${environment.apiUrl}/health`).subscribe({
+      error: (error: HttpErrorResponse) => {
+        errorStatus = error.status;
+      },
     });
 
     httpTestingController
       .expectOne(`${environment.apiUrl}/health`)
       .flush(null, { status: 0, statusText: 'Network Error' });
-    httpTestingController.expectOne(`${environment.localApiUrl}/health`).flush({ ok: true });
 
-    expect(response).toEqual({ ok: true });
+    expect(errorStatus).toBe(0);
   });
 
   it('does not retry when the API returns an HTTP error', () => {

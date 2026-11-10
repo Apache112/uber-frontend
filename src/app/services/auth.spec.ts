@@ -30,7 +30,7 @@ describe('AuthService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('registers a local account after both API addresses are unreachable', async () => {
+  it('registers a local account when the API is unreachable', async () => {
     const registration = firstValueFrom(
       service.register({
         name: 'Cliente local',
@@ -42,9 +42,6 @@ describe('AuthService', () => {
 
     httpTestingController
       .expectOne(`${environment.apiUrl}/auth/register`)
-      .flush(null, { status: 0, statusText: 'Network Error' });
-    httpTestingController
-      .expectOne(`${environment.localApiUrl}/auth/register`)
       .flush(null, { status: 0, statusText: 'Network Error' });
 
     const response = await registration;
@@ -58,9 +55,6 @@ describe('AuthService', () => {
 
     httpTestingController
       .expectOne(`${environment.apiUrl}/auth/login`)
-      .flush(null, { status: 0, statusText: 'Network Error' });
-    httpTestingController
-      .expectOne(`${environment.localApiUrl}/auth/login`)
       .flush(null, { status: 0, statusText: 'Network Error' });
 
     const response = await login;

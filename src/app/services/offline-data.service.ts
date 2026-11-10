@@ -246,8 +246,14 @@ export class OfflineDataService {
         id: ride.id,
         status: ride.status,
         estimated_fare: ride.estimated_fare,
+        estimated_distance_km: ride.estimated_distance_km,
+        estimated_duration_min: ride.estimated_duration_min,
         origin_name: ride.origin_name,
+        origin_latitude: ride.origin_latitude,
+        origin_longitude: ride.origin_longitude,
         destination_name: ride.destination_name,
+        destination_latitude: ride.destination_latitude,
+        destination_longitude: ride.destination_longitude,
         ...(driver
           ? {
               driver: {
@@ -450,7 +456,12 @@ export class OfflineDataService {
       id: ride.id,
       origin_name: ride.origin_name,
       destination_name: ride.destination_name,
+      origin_latitude: ride.origin_latitude,
+      origin_longitude: ride.origin_longitude,
+      destination_latitude: ride.destination_latitude,
+      destination_longitude: ride.destination_longitude,
       estimated_distance_km: ride.estimated_distance_km,
+      estimated_duration_min: ride.estimated_duration_min,
       estimated_fare: ride.estimated_fare,
       status: ride.status,
       ...(client ? { client: { name: client.name, phone: client.phone } } : {}),
@@ -462,8 +473,14 @@ export class OfflineDataService {
       id: ride.id,
       status: ride.status,
       estimated_fare: ride.estimated_fare,
+      estimated_distance_km: ride.estimated_distance_km,
+      estimated_duration_min: ride.estimated_duration_min,
       origin_name: ride.origin_name,
+      origin_latitude: ride.origin_latitude,
+      origin_longitude: ride.origin_longitude,
       destination_name: ride.destination_name,
+      destination_latitude: ride.destination_latitude,
+      destination_longitude: ride.destination_longitude,
     };
   }
 

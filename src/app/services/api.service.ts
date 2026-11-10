@@ -35,7 +35,12 @@ export interface RideRequest {
   id: number;
   origin_name: string;
   destination_name: string;
+  origin_latitude?: number;
+  origin_longitude?: number;
+  destination_latitude?: number;
+  destination_longitude?: number;
   estimated_distance_km: number;
+  estimated_duration_min?: number;
   estimated_fare: number;
   status?: string;
   client?: { name: string; phone?: string };
@@ -45,9 +50,15 @@ export interface DriverTrip {
   id: number;
   status: string;
   estimated_fare?: number;
+  estimated_distance_km?: number;
+  estimated_duration_min?: number;
   final_fare?: number;
   origin_name?: string;
+  origin_latitude?: number;
+  origin_longitude?: number;
   destination_name?: string;
+  destination_latitude?: number;
+  destination_longitude?: number;
 }
 
 export interface ClientActiveResponse {
@@ -57,8 +68,14 @@ export interface ClientActiveResponse {
     id: number;
     status?: string;
     estimated_fare?: number;
+    estimated_distance_km?: number;
+    estimated_duration_min?: number;
     origin_name?: string;
+    origin_latitude?: number;
+    origin_longitude?: number;
     destination_name?: string;
+    destination_latitude?: number;
+    destination_longitude?: number;
     driver?: {
       user?: { name: string; phone?: string };
       latest_location?: Coordinates;

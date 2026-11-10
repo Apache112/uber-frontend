@@ -51,7 +51,27 @@
       <ion-card-content>
         <h2>Viaje activo #{{ trip.id }}</h2>
         <p class="trip-status">{{ statusLabel(trip.status) }}</p>
+        <p *ngIf="trip.origin_name"><strong>Origen:</strong> {{ trip.origin_name }}</p>
+        <p *ngIf="trip.destination_name"><strong>Destino:</strong> {{ trip.destination_name }}</p>
+        <p *ngIf="trip.estimated_distance_km != null"><strong>Distancia:</strong> {{ trip.estimated_distance_km }} km</p>
+        <p *ngIf="trip.estimated_duration_min != null">
+          <strong>Duración aproximada:</strong> {{ trip.estimated_duration_min }} min
+        </p>
         <p *ngIf="trip.estimated_fare">Tarifa estimada: {{ formatCurrency(trip.estimated_fare) }}</p>
+        <div class="route-map-frame" *ngIf="hasRouteCoordinates(trip)">
+          <div #routeMap class="route-map" role="region" aria-label="Mapa del origen al destino del viaje"></div>
+          <p class="map-caption">Trayecto de referencia entre el punto de origen y el destino.</p>
+        </div>
+        <ion-button
+          *ngIf="hasRouteCoordinates(trip)"
+          expand="block"
+          fill="outline"
+          [href]="routeUrl(trip)"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir navegación en Google Maps
+        </ion-button>
 
         <ion-button
           *ngIf="trip.status === 'assigned'"

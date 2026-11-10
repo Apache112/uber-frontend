@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import type { OnDestroy, OnInit } from '@angular/core';
-import { Component, inject } from '@angular/core';
+import type { ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonButton,
@@ -12,6 +12,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import * as L from 'leaflet';
 
 import { apiErrorMessage } from '../../services/api-error';
 import type { DriverTrip, RideRequest } from '../../services/api.service';
@@ -47,6 +48,11 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private requestRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
+  private routeMap?: L.Map;
+  private routeLine?: L.Polyline;
+  private routeOriginMarker?: L.CircleMarker;
+  private routeDestinationMarker?: L.CircleMarker;
+  private routeMapElement?: HTMLDivElement;
 
   isOnline = false;
   isUpdatingAvailability = false;
@@ -61,6 +67,16 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
   actualDistanceKm: number | null = null;
   actualDurationMin: number | null = null;
   earnings: DriverEarnings = { tripIds: [], total: 0 };
+
+  @ViewChild('routeMap')
+  set routeMapContainer(element: ElementRef<HTMLDivElement> | undefined) {
+    this.routeMapElement = element?.nativeElement;
+    if (this.routeMapElement) {
+      this.initializeRouteMap();
+    } else {
+      this.destroyRouteMap();
+    }
+  }
 
   ngOnInit(): void {
     this.loadEarnings();
@@ -79,6 +95,7 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopLocationWatch();
+    this.destroyRouteMap();
     if (this.requestRefreshTimer) {
       clearInterval(this.requestRefreshTimer);
     }
@@ -138,7 +155,19 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
     this.isAcceptingRequestId = request.id;
     this.api.acceptRideRequest(request.id).subscribe({
       next: (response) => {
-        this.activeTrip = response.trip;
+        this.activeTrip = {
+          ...response.trip,
+          origin_name: response.trip.origin_name || request.origin_name,
+          origin_latitude: response.trip.origin_latitude ?? request.origin_latitude,
+          origin_longitude: response.trip.origin_longitude ?? request.origin_longitude,
+          destination_name: response.trip.destination_name || request.destination_name,
+          destination_latitude: response.trip.destination_latitude ?? request.destination_latitude,
+          destination_longitude: response.trip.destination_longitude ?? request.destination_longitude,
+          estimated_distance_km: response.trip.estimated_distance_km ?? request.estimated_distance_km,
+          estimated_duration_min: response.trip.estimated_duration_min ?? request.estimated_duration_min,
+          estimated_fare: response.trip.estimated_fare ?? request.estimated_fare,
+        };
+        this.updateRouteMap();
         this.saveActiveTrip();
         this.requests = this.requests.filter((item) => item.id !== request.id);
         this.isAcceptingRequestId = undefined;
@@ -192,7 +221,8 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
           return;
         }
 
-        this.activeTrip = response.trip;
+        this.activeTrip = { ...this.activeTrip, ...response.trip };
+        this.updateRouteMap();
         this.saveActiveTrip();
         this.infoMessage =
           action === 'arrive'
@@ -223,6 +253,101 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
           currency: 'COP',
           maximumFractionDigits: 0,
         }).format(amount);
+  }
+
+  hasRouteCoordinates(
+    trip: DriverTrip,
+  ): trip is DriverTrip & {
+    origin_latitude: number;
+    origin_longitude: number;
+    destination_latitude: number;
+    destination_longitude: number;
+  } {
+    return (
+      trip.origin_latitude != null &&
+      trip.origin_longitude != null &&
+      trip.destination_latitude != null &&
+      trip.destination_longitude != null
+    );
+  }
+
+  routeUrl(trip: DriverTrip): string {
+    const params = new URLSearchParams({
+      api: '1',
+      origin: `${trip.origin_latitude},${trip.origin_longitude}`,
+      destination: `${trip.destination_latitude},${trip.destination_longitude}`,
+      travelmode: 'driving',
+    });
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+  }
+
+  private initializeRouteMap(): void {
+    const trip = this.activeTrip;
+    if (!this.routeMapElement || !trip || !this.hasRouteCoordinates(trip)) {
+      return;
+    }
+
+    const origin: L.LatLngExpression = [trip.origin_latitude, trip.origin_longitude];
+    const destination: L.LatLngExpression = [trip.destination_latitude, trip.destination_longitude];
+    if (!this.routeMap) {
+      this.routeMap = L.map(this.routeMapElement, {
+        center: origin,
+        zoom: 13,
+        zoomControl: true,
+        scrollWheelZoom: false,
+      });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+      }).addTo(this.routeMap);
+      this.routeOriginMarker = L.circleMarker(origin, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#1677ff',
+        fillOpacity: 1,
+      })
+        .addTo(this.routeMap)
+        .bindTooltip('Origen', { direction: 'top', offset: [0, -8] });
+      this.routeDestinationMarker = L.circleMarker(destination, {
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#e44747',
+        fillOpacity: 1,
+      })
+        .addTo(this.routeMap)
+        .bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
+      this.routeLine = L.polyline([origin, destination], {
+        color: '#1677ff',
+        weight: 5,
+        opacity: 0.8,
+      }).addTo(this.routeMap);
+    } else {
+      this.routeOriginMarker?.setLatLng(origin);
+      this.routeDestinationMarker?.setLatLng(destination);
+      this.routeLine?.setLatLngs([origin, destination]);
+    }
+
+    const routeBounds = this.routeLine?.getBounds();
+    if (routeBounds) {
+      this.routeMap.fitBounds(routeBounds, { padding: [36, 36], maxZoom: 15 });
+    }
+    requestAnimationFrame(() => this.routeMap?.invalidateSize());
+  }
+
+  private updateRouteMap(): void {
+    if (this.routeMapElement) {
+      this.initializeRouteMap();
+    }
+  }
+
+  private destroyRouteMap(): void {
+    this.routeMap?.remove();
+    this.routeMap = undefined;
+    this.routeLine = undefined;
+    this.routeOriginMarker = undefined;
+    this.routeDestinationMarker = undefined;
   }
 
   private loadEarnings(): void {

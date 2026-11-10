@@ -39,9 +39,32 @@ describe('OfflineDataService', () => {
       role: 'driver',
     });
     service.toggleAvailability('available');
-    expect(service.getAvailableRequests().requests).toHaveLength(1);
+    const driverRequest = service.getAvailableRequests().requests[0];
+    expect(driverRequest).toMatchObject({
+      id: request.id,
+      origin_latitude: 4.65,
+      origin_longitude: -74.05,
+      destination_latitude: 4.7,
+      destination_longitude: -74.1,
+      estimated_duration_min: expect.any(Number),
+    });
 
     service.acceptRideRequest(request.id);
+    await service.login({ login: 'cliente@example.com', password: 'clave123' });
+    expect(service.getClientActive()).toMatchObject({
+      has_active: true,
+      type: 'trip',
+      data: {
+        status: 'assigned',
+        origin_latitude: 4.65,
+        origin_longitude: -74.05,
+        destination_latitude: 4.7,
+        destination_longitude: -74.1,
+        estimated_duration_min: expect.any(Number),
+      },
+    });
+
+    await service.login({ login: 'conductor@example.com', password: 'clave456' });
     service.updateDriverTrip(request.id, 'arrive');
     service.updateDriverTrip(request.id, 'start');
     service.updateDriverTrip(request.id, 'complete', 5, 15);

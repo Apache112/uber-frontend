@@ -27,7 +27,7 @@ describe('ApiService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('uses the local fare calculator when both API addresses are unreachable', () => {
+  it('uses the local fare calculator when the API is unreachable', () => {
     let fare = 0;
     service
       .estimateFare({
@@ -42,9 +42,6 @@ describe('ApiService', () => {
 
     httpTestingController
       .expectOne(`${environment.apiUrl}/client/estimate-fare`)
-      .flush(null, { status: 0, statusText: 'Network Error' });
-    httpTestingController
-      .expectOne(`${environment.localApiUrl}/client/estimate-fare`)
       .flush(null, { status: 0, statusText: 'Network Error' });
 
     expect(fare).toBeGreaterThan(0);
