@@ -40,6 +40,12 @@
 
     <div class="ion-margin-top">
       <ion-button expand="block" (click)="onLogin()">Ingresar</ion-button>
+      <ion-button expand="block" fill="outline" (click)="onLocalLogin()"
+        >Ingresar con cuenta local de prueba</ion-button
+      >
+      <p class="local-mode-note">
+        Las cuentas locales y los viajes de prueba solo están disponibles en este navegador.
+      </p>
       <ion-button expand="block" fill="clear" [routerLink]="['/register']">¿No tienes cuenta? Regístrate</ion-button>
     </div>
   </div>

@@ -1,7 +1,9 @@
 <ion-app>
-  <div class="offline-banner" *ngIf="offline.isOfflineMode()">
-    Sin conexión con el servidor: sesión local de pasajero. La cuenta no está verificada y los datos solo se guardan en
-    este dispositivo.
-  </div>
+  @if (offline.isOfflineMode()) {
+    <div class="offline-banner">
+      Modo local de pruebas: la cuenta y los viajes solo se guardan en este navegador; no se comparten con otros
+      dispositivos ni con el servidor.
+    </div>
+  }
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

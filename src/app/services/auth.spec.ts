@@ -69,4 +69,36 @@ describe('AuthService', () => {
     expect(response.message).toContain('no pudo verificarse');
     expect(localStorage.getItem('offline_mode')).toBe('true');
   });
+
+  it('creates and logs into a local driver account without sending an API request', async () => {
+    const credentials = {
+      name: 'Conductor local',
+      email: 'conductor@example.com',
+      password: 'clave456',
+      role: 'driver' as const,
+      phone: '3001234567',
+      license_number: 'LIC-123',
+      plate: 'ABC123',
+      brand: 'Toyota',
+      model: 'Corolla',
+      year: 2020,
+      capacity: 4,
+      color: 'Azul',
+    };
+
+    const created = await firstValueFrom(service.registerLocal(credentials));
+    expect(created.user.role).toBe('driver');
+    expect(localStorage.getItem('access_token')).toBe('offline-1');
+
+    await firstValueFrom(service.logout());
+    const loggedIn = await firstValueFrom(
+      service.loginLocal({ login: credentials.email, password: credentials.password }),
+    );
+
+    expect(loggedIn.user.role).toBe('driver');
+    expect(localStorage.getItem('user_role')).toBe('driver');
+    expect(localStorage.getItem('offline_mode')).toBe('true');
+    httpTestingController.expectNone(`${environment.apiUrl}/auth/register`);
+    httpTestingController.expectNone(`${environment.apiUrl}/auth/login`);
+  });
 });

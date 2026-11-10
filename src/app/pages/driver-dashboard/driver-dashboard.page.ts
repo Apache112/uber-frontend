@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonButton,
   IonCard,
@@ -16,6 +17,7 @@ import {
 import { apiErrorMessage } from '../../services/api-error';
 import type { DriverTrip, RideRequest } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 const ACTIVE_TRIP_KEY = 'driver_active_trip';
 const DRIVER_EARNINGS_KEY = 'driver_demo_earnings';
@@ -45,6 +47,8 @@ interface DriverEarnings {
 })
 export class DriverDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   private requestRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
 
@@ -223,6 +227,15 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
           currency: 'COP',
           maximumFractionDigits: 0,
         }).format(amount);
+  }
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => void this.router.navigate(['/login']),
+      error: (error: unknown) => {
+        this.errorMessage = apiErrorMessage(error, 'No se pudo cerrar la sesión.');
+      },
+    });
   }
 
   private loadEarnings(): void {
