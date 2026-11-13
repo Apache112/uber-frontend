@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://20.20.1.22:8000",
+    "target": "http://20.20.0.210:8000",
     "changeOrigin": true
   }
 }
