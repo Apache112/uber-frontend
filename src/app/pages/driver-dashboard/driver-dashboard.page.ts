@@ -319,7 +319,7 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 3,
-        fillColor: '#1677ff',
+        fillColor: '#f0a51b',
         fillOpacity: 1,
       })
         .addTo(this.routeMap)
@@ -328,13 +328,13 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 3,
-        fillColor: '#e44747',
+        fillColor: '#ee7048',
         fillOpacity: 1,
       })
         .addTo(this.routeMap)
         .bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
       this.routeLine = L.polyline([origin, destination], {
-        color: '#1677ff',
+        color: '#f0a51b',
         weight: 5,
         opacity: 0.8,
       }).addTo(this.routeMap);

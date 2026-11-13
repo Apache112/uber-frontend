@@ -1,8 +1,14 @@
 .admin-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 8px 0 40px;
+  padding: 8px 0 42px;
+}
+
+.toolbar-context {
+  color: #f0a51b;
+  font-size: 0.68em;
+  letter-spacing: 0.12em;
 }
 
 .section-heading,
@@ -15,52 +21,62 @@
 
 .section-heading {
   margin: 4px 0 18px;
+  padding: 18px;
+  border-left: 5px solid #f0a51b;
+  background: #173a3a;
+  color: #fffdf7;
 }
 
 .section-heading h1 {
   margin: 0;
-  color: #102a43;
+  color: inherit;
   font-size: clamp(1.7rem, 5vw, 2.4rem);
-  font-weight: 800;
+  font-weight: 850;
+  letter-spacing: -0.06em;
 }
 
 .eyebrow {
   margin: 0 0 5px;
-  color: #138b85;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  color: #f0a51b;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+.section-heading ion-button {
+  --color: #fffdf7;
+  --border-color: #f0a51b;
 }
 
 .tabs-scroll,
 .filters {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   overflow-x: auto;
   padding: 10px 12px;
-  background: #fff;
-  border-bottom: 1px solid #e4e9ed;
+  background: #f4f1e8;
+  border-bottom: 1px solid #deddd3;
 }
 
 .tabs-scroll button,
 .filters button {
   flex: 0 0 auto;
-  padding: 8px 14px;
-  border: 1px solid #dfe6ea;
-  border-radius: 999px;
-  background: #fff;
-  color: #102a43;
+  padding: 8px 13px;
+  border: 1px solid #173a3a;
+  border-radius: 2px;
+  background: transparent;
+  color: #173a3a;
   font: inherit;
-  font-size: 0.85rem;
-  font-weight: 650;
+  font-size: 0.82rem;
+  font-weight: 750;
   cursor: pointer;
 }
 
 .tabs-scroll button.active,
 .filters button.selected {
-  border-color: #102a43;
-  background: #102a43;
-  color: #fff;
+  border-color: #173a3a;
+  background: #173a3a;
+  color: #fffdf7;
 }
 
 .filters {
@@ -72,65 +88,63 @@
 
 ion-card {
   margin: 12px 0;
-  border: 1px solid rgb(20 80 96 / 7%);
-  border-radius: 18px;
-  box-shadow: 0 10px 28px rgb(16 42 67 / 7%);
+  border: 1px solid #deddd3;
+  border-radius: 3px;
+  box-shadow: 4px 4px 0 rgb(23 58 58 / 8%);
 }
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
   margin-bottom: 14px;
 }
 
 .stat {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   padding: 16px;
-  border: 1px solid rgb(20 80 96 / 7%);
-  border-radius: 16px;
-  background: linear-gradient(140deg, #fff, #f3f8fb);
-  box-shadow: 0 8px 24px rgb(16 42 67 / 5%);
+  border-top: 3px solid #f0a51b;
+  background: #fffdf7;
 }
 
 .stat strong,
 .revenue {
-  color: #102a43;
-  font-size: 1.6rem;
-  font-weight: 800;
+  color: #173a3a;
+  font-size: 1.65rem;
+  font-weight: 850;
 }
 
 .stat span {
-  color: #607d8b;
-  font-size: 0.85rem;
+  color: #68716d;
+  font-size: 0.82rem;
 }
 
 .item-heading h2 {
   margin: 0;
-  color: #102a43;
+  color: #173a3a;
   font-size: 1.1rem;
 }
 
 .item-heading p,
 ion-card p {
-  color: #607d8b;
+  color: #68716d;
   line-height: 1.5;
 }
 
 .status {
   flex: 0 0 auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #eff3f5;
-  color: #334e5c;
-  font-size: 0.78rem;
-  font-weight: 700;
+  padding: 4px 8px;
+  background: #e7e4d8;
+  color: #173a3a;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .status.active-status {
-  background: #e5f6ef;
-  color: #087c4b;
+  background: #dce8d9;
+  color: #23513a;
 }
 
 .actions {
@@ -148,9 +162,14 @@ ion-card p {
 }
 
 ion-item {
-  --background: #f7f9fa;
-  --border-radius: 12px;
-  margin: 8px 0;
+  --background: #f4f1e8;
+  --border-radius: 3px;
+  margin: 7px 0;
+  border-bottom: 1px solid #deddd3;
+}
+
+ion-button {
+  --border-radius: 3px;
 }
 
 .form-message,
@@ -162,19 +181,18 @@ ion-item {
 
 .json-panel {
   padding: 16px;
-  border-radius: 18px;
-  background: #f5f8fa;
+  border-top: 4px solid #f0a51b;
+  background: #e7e4d8;
 }
 
 .json-panel h2 {
-  color: #102a43;
+  color: #173a3a;
 }
 
 .json-panel pre {
   overflow: auto;
   padding: 14px;
-  border-radius: 12px;
-  background: #fff;
+  background: #fffdf7;
   font-size: 0.8rem;
 }
 

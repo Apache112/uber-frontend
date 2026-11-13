@@ -1,80 +1,164 @@
 ion-content {
-  --background:
-    radial-gradient(circle at 85% 14%, rgb(34 166 153 / 14%), transparent 30%),
-    linear-gradient(145deg, #f3f8fb, #e9f2f5);
+  --background: #173a3a;
 }
 
 .welcome-page {
   display: grid;
   min-height: 100%;
-  place-items: center;
-  padding: 24px;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(24px, 5vw, 56px) clamp(18px, 5vw, 56px);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 4%) 1px, transparent 1px);
+  background-size: 34px 34px;
 }
 
 .welcome-card {
-  width: 100%;
-  max-width: 560px;
-  padding: clamp(28px, 7vw, 52px);
-  border: 1px solid rgb(20 80 96 / 7%);
-  border-radius: 28px;
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 24px 70px rgb(16 42 67 / 12%);
+  position: relative;
+  width: min(100%, 620px);
+  margin: auto 0;
+  overflow: hidden;
+  padding: clamp(28px, 6vw, 64px);
+  border: 1px solid rgb(255 255 255 / 16%);
+  background: #f4f1e8;
+  box-shadow: 14px 14px 0 #f0a51b;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 48px;
 }
 
 .brand-mark {
   display: grid;
-  width: 52px;
-  height: 52px;
+  width: 42px;
+  height: 42px;
   place-items: center;
-  margin-bottom: 24px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #102a43, #168b89);
-  color: #fff;
-  font-size: 1.65rem;
-  font-weight: 850;
-  box-shadow: 0 10px 24px rgb(16 42 67 / 20%);
+  background: #f0a51b;
+  color: #173a3a;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.brand-name {
+  color: #173a3a;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: #138b85;
-  font-size: 0.76rem;
+  margin: 0 0 14px;
+  color: #9c6710;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+h1 {
+  max-width: 460px;
+  margin: 0;
+  color: #173a3a;
+  font-size: clamp(2.4rem, 8vw, 4.5rem);
+  font-weight: 850;
+  letter-spacing: -0.07em;
+  line-height: 0.98;
+}
+
+.description {
+  max-width: 420px;
+  margin: 22px 0;
+  color: #68716d;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.route-stamp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: min(100%, 340px);
+  margin: 28px 0 32px;
+}
+
+.route-stop {
+  z-index: 1;
+  width: 13px;
+  height: 13px;
+  border: 3px solid #f4f1e8;
+  outline: 2px solid #173a3a;
+  background: #f0a51b;
+}
+
+.route-stop.end {
+  width: 14px;
+  height: 14px;
+  background: #173a3a;
+}
+
+.route-path {
+  width: 120px;
+  height: 2px;
+  border-top: 2px dashed #173a3a;
+}
+
+.route-caption {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  margin-left: 12px;
+  color: #68716d;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
 
-h1 {
-  margin: 0;
-  color: #102a43;
-  font-size: clamp(2rem, 7vw, 3.25rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.08;
-}
-
-.description,
-.welcome-note {
-  color: #607d8b;
-  line-height: 1.6;
-}
-
-.description {
-  margin: 16px 0 24px;
-  font-size: 1.05rem;
+.route-caption span {
+  color: #173a3a;
 }
 
 .welcome-actions {
   display: grid;
-  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .welcome-actions ion-button {
-  --border-radius: 14px;
-  font-weight: 700;
+  --border-radius: 3px;
+  min-height: 50px;
+  font-weight: 800;
+}
+
+.welcome-actions ion-button:first-child {
+  --background: #173a3a;
+  --color: #fffdf7;
+}
+
+.welcome-actions ion-button:last-child {
+  --border-color: #173a3a;
+  --color: #173a3a;
 }
 
 .welcome-note {
-  margin: 22px 0 0;
-  font-size: 0.85rem;
-  text-align: center;
+  margin: 28px 0 0;
+  color: #68716d;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 540px) {
+  .welcome-card {
+    box-shadow: 7px 7px 0 #f0a51b;
+  }
+
+  .brand-row {
+    margin-bottom: 36px;
+  }
+
+  .welcome-actions {
+    grid-template-columns: 1fr;
+  }
 }

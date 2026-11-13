@@ -5,8 +5,9 @@ import { guestGuard, roleGuard } from './guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
     pathMatch: 'full',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/welcome/welcome.page').then((module) => module.WelcomePage),
   },
   {
     path: 'welcome',

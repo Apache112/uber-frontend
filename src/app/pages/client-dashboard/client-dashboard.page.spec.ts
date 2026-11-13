@@ -95,7 +95,7 @@ describe('ClientDashboardPage', () => {
         [4.65, -74.05],
         [4.7, -74.1],
       ],
-      expect.objectContaining({ color: '#1677ff' }),
+      expect.objectContaining({ color: '#f0a51b' }),
     );
     expect(map.fitBounds).toHaveBeenCalledOnce();
   });
@@ -200,14 +200,14 @@ describe('ClientDashboardPage', () => {
     );
     expect(leafletMocks.circleMarker).toHaveBeenCalledWith(
       [position.coords.latitude, position.coords.longitude],
-      expect.objectContaining({ fillColor: '#1677ff' }),
+      expect.objectContaining({ fillColor: '#f0a51b' }),
     );
     expect(leafletMocks.polyline).toHaveBeenCalledWith(
       [
         [position.coords.latitude, position.coords.longitude],
         [2.96, -75.29],
       ],
-      expect.objectContaining({ color: '#1677ff' }),
+      expect.objectContaining({ color: '#f0a51b' }),
     );
     expect(map.fitBounds).toHaveBeenCalledOnce();
     expect(watchPosition).toHaveBeenCalledOnce();

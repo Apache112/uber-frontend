@@ -1,21 +1,23 @@
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Iniciar Sesión - Uber</ion-title>
+  <ion-toolbar>
+    <ion-title>Rumbo · acceso</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <div class="login-container">
     <section class="login-intro">
-      <span class="brand-mark" aria-hidden="true">U</span>
-      <p class="eyebrow">TU CIUDAD, A TU RITMO</p>
-      <h1>Qué bueno verte</h1>
-      <p>Inicia sesión y sigamos moviéndonos.</p>
+      <div class="brand-row">
+        <span class="brand-mark" aria-hidden="true">R</span><span class="brand-name">RUMBO</span>
+      </div>
+      <p class="eyebrow">TU PRÓXIMO TRAYECTO</p>
+      <h1>Qué bueno tenerte de vuelta.</h1>
+      <p>Accede a tu espacio y continúa tu camino.</p>
     </section>
     <ion-list lines="none">
       <ion-item>
         <ion-input
-          label="Correo o Teléfono"
+          label="Correo o teléfono"
           labelPlacement="stacked"
           type="text"
           [(ngModel)]="loginData.login"

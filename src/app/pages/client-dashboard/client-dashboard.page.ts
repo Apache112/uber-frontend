@@ -443,9 +443,9 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
       if (currentAccuracy != null) {
         this.accuracyCircle = L.circle(position, {
           radius: currentAccuracy,
-          color: '#3182ce',
+          color: '#f0a51b',
           weight: 1,
-          fillColor: '#3182ce',
+          fillColor: '#f0a51b',
           fillOpacity: 0.12,
         }).addTo(this.map);
       }
@@ -453,7 +453,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 4,
-        fillColor: '#1677ff',
+        fillColor: '#f0a51b',
         fillOpacity: 1,
       }).addTo(this.map);
       this.locationMarker.bindTooltip('Tu ubicación', { direction: 'top', offset: [0, -8] });
@@ -514,7 +514,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 3,
-        fillColor: '#e44747',
+        fillColor: '#ee7048',
         fillOpacity: 1,
       }).addTo(this.map);
       this.destinationMarker.bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
@@ -524,7 +524,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
 
     if (!this.routeLine) {
       this.routeLine = L.polyline([origin, destination], {
-        color: '#1677ff',
+        color: '#f0a51b',
         weight: 5,
         opacity: 0.8,
       }).addTo(this.map);
@@ -569,7 +569,7 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 3,
-        fillColor: '#1677ff',
+        fillColor: '#f0a51b',
         fillOpacity: 1,
       })
         .addTo(this.activeRouteMap)
@@ -578,13 +578,13 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
         radius: 9,
         color: '#ffffff',
         weight: 3,
-        fillColor: '#e44747',
+        fillColor: '#ee7048',
         fillOpacity: 1,
       })
         .addTo(this.activeRouteMap)
         .bindTooltip('Destino', { direction: 'top', offset: [0, -8] });
       this.activeRouteLine = L.polyline([origin, destination], {
-        color: '#1677ff',
+        color: '#f0a51b',
         weight: 5,
         opacity: 0.8,
       }).addTo(this.activeRouteMap);

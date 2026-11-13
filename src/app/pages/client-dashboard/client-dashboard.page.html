@@ -1,8 +1,8 @@
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Uber - Cliente</ion-title>
+  <ion-toolbar>
+    <ion-title>RUMBO <span class="toolbar-context">/ PASAJERO</span></ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" color="light" (click)="logout()">Salir</ion-button>
+      <ion-button fill="clear" color="light" (click)="logout()">Cerrar sesión</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -10,17 +10,17 @@
 <ion-content class="ion-padding">
   <main class="dashboard-container">
     <section class="welcome">
-      <p class="eyebrow">UBER · VIAJA A TU MANERA</p>
-      <h1>¿A dónde vamos?</h1>
-      <p>Tu próximo viaje empieza aquí. Elige el punto de recogida y descubre cuánto cuesta.</p>
+      <p class="eyebrow">PLANIFICADOR DE TRAYECTOS <span>01 / 03</span></p>
+      <h1>¿Cuál es tu próximo rumbo?</h1>
+      <p>Marca el inicio y el destino. Nosotros trazamos el resto.</p>
     </section>
 
     <ion-card>
       <ion-card-content>
         <div class="card-heading">
           <div>
-            <p class="step-label">01 · TU RUTA</p>
-            <h2>Solicitar un viaje</h2>
+            <p class="step-label">TRAZA TU VIAJE <span>● ── ○</span></p>
+            <h2>Dos puntos. Un camino.</h2>
           </div>
           <span class="heading-icon" aria-hidden="true">↗</span>
         </div>
@@ -35,7 +35,7 @@
           </ion-item>
           <ion-item>
             <ion-input
-              label="Latitud del origen"
+              label="Latitud de recogida"
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.origin_latitude"
@@ -45,7 +45,7 @@
           </ion-item>
           <ion-item>
             <ion-input
-              label="Longitud del origen"
+              label="Longitud de recogida"
               labelPlacement="stacked"
               type="number"
               [(ngModel)]="rideForm.origin_longitude"
@@ -55,7 +55,7 @@
           </ion-item>
         </ion-list>
         <ion-button expand="block" fill="outline" (click)="useCurrentLocation()" [disabled]="isTrackingLocation">
-          {{ isTrackingLocation ? 'Actualizando ubicación en vivo…' : 'Usar mi ubicación como origen' }}
+          {{ isTrackingLocation ? 'Siguiendo tu ubicación…' : '◎ Centrar en mi ubicación' }}
         </ion-button>
         <div class="map-frame" *ngIf="rideForm.origin_latitude != null && rideForm.origin_longitude != null">
           <iframe
