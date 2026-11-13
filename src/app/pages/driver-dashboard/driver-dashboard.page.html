@@ -1,6 +1,9 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Uber - Conductor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light" (click)="logout()">Salir</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -53,7 +56,9 @@
         <p class="trip-status">{{ statusLabel(trip.status) }}</p>
         <p *ngIf="trip.origin_name"><strong>Origen:</strong> {{ trip.origin_name }}</p>
         <p *ngIf="trip.destination_name"><strong>Destino:</strong> {{ trip.destination_name }}</p>
-        <p *ngIf="trip.estimated_distance_km != null"><strong>Distancia:</strong> {{ trip.estimated_distance_km }} km</p>
+        <p *ngIf="trip.estimated_distance_km != null">
+          <strong>Distancia:</strong> {{ trip.estimated_distance_km }} km
+        </p>
         <p *ngIf="trip.estimated_duration_min != null">
           <strong>Duración aproximada:</strong> {{ trip.estimated_duration_min }} min
         </p>

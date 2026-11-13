@@ -86,6 +86,19 @@ export class AuthService {
     return localStorage.getItem('user_role');
   }
 
+  homeFor(role: string | null): string {
+    switch (role) {
+      case 'admin':
+        return '/admin-dashboard';
+      case 'driver':
+        return '/driver-dashboard';
+      case 'client':
+        return '/client-dashboard';
+      default:
+        return '/login';
+    }
+  }
+
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
   }

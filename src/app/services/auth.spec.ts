@@ -63,4 +63,11 @@ describe('AuthService', () => {
     expect(response.message).toContain('no pudo verificarse');
     expect(localStorage.getItem('offline_mode')).toBe('true');
   });
+
+  it('routes each supported role to its own dashboard', () => {
+    expect(service.homeFor('client')).toBe('/client-dashboard');
+    expect(service.homeFor('driver')).toBe('/driver-dashboard');
+    expect(service.homeFor('admin')).toBe('/admin-dashboard');
+    expect(service.homeFor(null)).toBe('/login');
+  });
 });

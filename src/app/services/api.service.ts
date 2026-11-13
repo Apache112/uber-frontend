@@ -99,6 +99,52 @@ export interface ClientTrip {
   rating?: { score: number };
 }
 
+export interface AdminDashboard {
+  success?: boolean;
+  stats: {
+    total_clients?: number;
+    total_drivers?: number;
+    pending_drivers?: number;
+    approved_drivers?: number;
+    active_trips?: number;
+    completed_trips?: number;
+    cancelled_trips?: number;
+    pending_requests?: number;
+    total_revenue?: number;
+  };
+}
+
+export interface AdminDriver {
+  id: number;
+  license_number: string;
+  approval_status: string;
+  rating_average?: number;
+  user?: { name: string; email: string };
+  vehicles?: { plate: string; brand: string; model: string; year: number }[];
+}
+
+export interface AdminFare {
+  id?: number;
+  name: string;
+  base_fare: number;
+  price_per_km: number;
+  price_per_minute: number;
+  minimum_fare: number;
+  surge_multiplier: number;
+  active: boolean;
+}
+
+export interface AdminTrip {
+  id: number;
+  status: string;
+  final_fare?: number;
+  estimated_fare?: number;
+  client_id?: number;
+  driver_id?: number;
+  client?: { name: string };
+  driver?: { user?: { name: string } };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -149,6 +195,55 @@ export class ApiService {
       this.http.post<{ message: string }>(`${this.apiUrl}/client/trips/${id}/rating`, rating),
       () => this.offline.rateClientTrip(id, rating),
     );
+  }
+
+  activeFare(): Observable<{ success?: boolean; fare: AdminFare }> {
+    return this.http.get<{ success?: boolean; fare: AdminFare }>(`${this.apiUrl}/fares/active`);
+  }
+
+  adminDashboard(): Observable<AdminDashboard> {
+    return this.http.get<AdminDashboard>(`${this.apiUrl}/admin/dashboard`);
+  }
+
+  adminDrivers(approvalStatus?: string): Observable<{ success?: boolean; drivers: AdminDriver[] }> {
+    const url = approvalStatus
+      ? `${this.apiUrl}/admin/drivers?approval_status=${encodeURIComponent(approvalStatus)}`
+      : `${this.apiUrl}/admin/drivers`;
+    return this.http.get<{ success?: boolean; drivers: AdminDriver[] }>(url);
+  }
+
+  adminApproval(
+    id: number,
+    approvalStatus: 'approved' | 'suspended' | 'rejected',
+    adminNotes: string,
+  ): Observable<{ success?: boolean; message: string; driver?: AdminDriver }> {
+    return this.http.patch<{ success?: boolean; message: string; driver?: AdminDriver }>(
+      `${this.apiUrl}/admin/drivers/${id}/approval`,
+      { approval_status: approvalStatus, admin_notes: adminNotes },
+    );
+  }
+
+  adminFares(): Observable<{ success?: boolean; fares: AdminFare[] }> {
+    return this.http.get<{ success?: boolean; fares: AdminFare[] }>(`${this.apiUrl}/admin/fares`);
+  }
+
+  adminCreateFare(fare: AdminFare): Observable<{ success?: boolean; message: string; fare: AdminFare }> {
+    return this.http.post<{ success?: boolean; message: string; fare: AdminFare }>(`${this.apiUrl}/admin/fares`, fare);
+  }
+
+  adminTrips(status?: string): Observable<{ success?: boolean; trips: AdminTrip[] | { data: AdminTrip[] } }> {
+    const url = status
+      ? `${this.apiUrl}/admin/trips?status=${encodeURIComponent(status)}`
+      : `${this.apiUrl}/admin/trips`;
+    return this.http.get<{ success?: boolean; trips: AdminTrip[] | { data: AdminTrip[] } }>(url);
+  }
+
+  adminReports(): Observable<unknown> {
+    return this.http.get<unknown>(`${this.apiUrl}/admin/reports`);
+  }
+
+  adminAuditLogs(): Observable<unknown> {
+    return this.http.get<unknown>(`${this.apiUrl}/admin/audit-logs`);
   }
 
   toggleAvailability(status: 'available' | 'unavailable'): Observable<{

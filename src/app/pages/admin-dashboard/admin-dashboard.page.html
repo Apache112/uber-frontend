@@ -1,0 +1,229 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Administración</ion-title>
+    <ion-button slot="end" fill="clear" color="light" (click)="logout()">Cerrar sesión</ion-button>
+  </ion-toolbar>
+  <nav class="tabs-scroll" aria-label="Secciones administrativas">
+    @for (item of tabs; track item.id) {
+    <button
+      type="button"
+      [class.active]="tab === item.id"
+      [attr.aria-current]="tab === item.id ? 'page' : null"
+      (click)="selectTab(item.id)"
+    >
+      {{ item.label }}
+    </button>
+    }
+  </nav>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="admin-container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">PANEL DE CONTROL</p>
+        <h1>{{ tabTitle() }}</h1>
+      </div>
+      <ion-button fill="outline" (click)="load()" [disabled]="loading">
+        {{ loading ? 'Cargando...' : 'Actualizar' }}
+      </ion-button>
+    </div>
+
+    @if (errorMessage) {
+    <ion-text color="danger">
+      <p class="form-message">{{ errorMessage }}</p>
+    </ion-text>
+    } @if (successMessage) {
+    <ion-text color="success">
+      <p class="form-message">{{ successMessage }}</p>
+    </ion-text>
+    } @if (loading) {
+    <p class="loading-message">Cargando información...</p>
+    } @if (tab === 'dashboard') { @if (statList().length) {
+    <section class="stat-grid">
+      @for (stat of statList(); track stat.label) {
+      <article class="stat">
+        <strong>{{ stat.value }}</strong>
+        <span>{{ stat.label }}</span>
+      </article>
+      }
+    </section>
+    } @if (dashboardStats; as stats) { @if (stats.total_revenue !== undefined) {
+    <ion-card>
+      <ion-card-content>
+        <p class="eyebrow">INGRESOS TOTALES</p>
+        <strong class="revenue">{{ formatCurrency(stats.total_revenue) }}</strong>
+      </ion-card-content>
+    </ion-card>
+    } } @if (!loading && !dashboardStats) {
+    <p class="empty-state">No hay información del resumen disponible.</p>
+    } } @if (tab === 'drivers') {
+    <div class="filters" aria-label="Filtrar conductores">
+      @for (filter of ['', 'pending', 'approved', 'suspended', 'rejected']; track filter) {
+      <button type="button" [class.selected]="driverFilter === filter" (click)="driverFilter = filter; load()">
+        {{ filter || 'Todos' }}
+      </button>
+      }
+    </div>
+    @for (driver of drivers; track driver.id) {
+    <ion-card>
+      <ion-card-content>
+        <div class="item-heading">
+          <div>
+            <h2>{{ driver.user?.name || 'Conductor' }}</h2>
+            <p>{{ driver.user?.email }} · Licencia {{ driver.license_number }}</p>
+          </div>
+          <span class="status">{{ driver.approval_status }}</span>
+        </div>
+        @for (vehicle of driver.vehicles; track vehicle.plate) {
+        <p>{{ vehicle.plate }} · {{ vehicle.brand }} {{ vehicle.model }} · {{ vehicle.year }}</p>
+        } @if (driver.rating_average !== undefined) {
+        <p>Calificación promedio: {{ driver.rating_average }} / 5</p>
+        }
+        <div class="actions">
+          @if (driver.approval_status !== 'approved') {
+          <ion-button size="small" (click)="approve(driver, 'approved')" [disabled]="approvalInProgress === driver.id">
+            Aprobar
+          </ion-button>
+          } @if (driver.approval_status !== 'suspended') {
+          <ion-button
+            size="small"
+            fill="outline"
+            (click)="approve(driver, 'suspended')"
+            [disabled]="approvalInProgress === driver.id"
+          >
+            Suspender
+          </ion-button>
+          } @if (driver.approval_status === 'pending') {
+          <ion-button
+            size="small"
+            fill="outline"
+            color="danger"
+            (click)="approve(driver, 'rejected')"
+            [disabled]="approvalInProgress === driver.id"
+          >
+            Rechazar
+          </ion-button>
+          }
+        </div>
+      </ion-card-content>
+    </ion-card>
+    } @empty { @if (!loading) {
+    <p class="empty-state">No hay conductores para este filtro.</p>
+    } } } @if (tab === 'fares') {
+    <ion-card>
+      <ion-card-content>
+        <h2>Nueva tarifa</h2>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-input label="Nombre" labelPlacement="stacked" [(ngModel)]="fare.name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Tarifa base (COP)"
+              type="number"
+              min="0"
+              labelPlacement="stacked"
+              [(ngModel)]="fare.base_fare"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Precio por kilómetro (COP)"
+              type="number"
+              min="0"
+              labelPlacement="stacked"
+              [(ngModel)]="fare.price_per_km"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Precio por minuto (COP)"
+              type="number"
+              min="0"
+              labelPlacement="stacked"
+              [(ngModel)]="fare.price_per_minute"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Tarifa mínima (COP)"
+              type="number"
+              min="0"
+              labelPlacement="stacked"
+              [(ngModel)]="fare.minimum_fare"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Multiplicador de demanda"
+              type="number"
+              min="0.1"
+              step="0.1"
+              labelPlacement="stacked"
+              [(ngModel)]="fare.surge_multiplier"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <label class="active-toggle">
+              <input type="checkbox" [(ngModel)]="fare.active" />
+              Activar tarifa al guardarla
+            </label>
+          </ion-item>
+        </ion-list>
+        <ion-button (click)="createFare()" [disabled]="isCreatingFare">
+          {{ isCreatingFare ? 'Guardando...' : 'Guardar tarifa' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    @for (item of fares; track item.id ?? item.name) {
+    <ion-card>
+      <ion-card-content>
+        <div class="item-heading">
+          <h2>{{ item.name }}</h2>
+          <span class="status" [class.active-status]="item.active">{{ item.active ? 'Activa' : 'Inactiva' }}</span>
+        </div>
+        <p>
+          Base {{ formatCurrency(item.base_fare) }} · {{ formatCurrency(item.price_per_km) }}/km · {{
+          formatCurrency(item.price_per_minute) }}/min · mínima {{ formatCurrency(item.minimum_fare) }} · multiplicador
+          x{{ item.surge_multiplier }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+    } @empty { @if (!loading) {
+    <p class="empty-state">No hay tarifas registradas.</p>
+    } } } @if (tab === 'trips') {
+    <div class="filters" aria-label="Filtrar viajes">
+      @for (filter of ['', 'assigned', 'in_progress', 'completed', 'cancelled']; track filter) {
+      <button type="button" [class.selected]="tripFilter === filter" (click)="tripFilter = filter; load()">
+        {{ filter || 'Todos' }}
+      </button>
+      }
+    </div>
+    @for (trip of trips; track trip.id) {
+    <ion-card>
+      <ion-card-content>
+        <div class="item-heading">
+          <h2>Viaje #{{ trip.id }}</h2>
+          <span class="status">{{ trip.status }}</span>
+        </div>
+        <p>Cliente: {{ trip.client?.name || trip.client_id || '—' }}</p>
+        <p>Conductor: {{ trip.driver?.user?.name || trip.driver_id || '—' }}</p>
+        <p>Tarifa: {{ formatCurrency(trip.final_fare ?? trip.estimated_fare) }}</p>
+      </ion-card-content>
+    </ion-card>
+    } @empty { @if (!loading) {
+    <p class="empty-state">No hay viajes para este filtro.</p>
+    } } } @if (tab === 'reports' && reports !== undefined) {
+    <section class="json-panel">
+      <h2>Reporte consolidado</h2>
+      <pre>{{ reports | json }}</pre>
+    </section>
+    } @if (tab === 'audit' && auditLogs !== undefined) {
+    <section class="json-panel">
+      <h2>Registro de auditoría</h2>
+      <pre>{{ auditLogs | json }}</pre>
+    </section>
+    }
+  </main>
+</ion-content>

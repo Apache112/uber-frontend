@@ -3,9 +3,10 @@ import type { ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
   IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonContent,
@@ -23,6 +24,7 @@ import { environment } from '../../../environments/environment';
 import { apiErrorMessage } from '../../services/api-error';
 import type { ClientActiveResponse, RideEstimate, RideRequestPayload } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -31,6 +33,7 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [
     IonButton,
+    IonButtons,
     IonCard,
     IonCardContent,
     IonContent,
@@ -48,6 +51,8 @@ import { ApiService } from '../../services/api.service';
 })
 export class ClientDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   private sanitizer = inject(DomSanitizer);
   private activeRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
@@ -145,6 +150,17 @@ export class ClientDashboardPage implements OnInit, OnDestroy {
     this.stopLocationWatch();
     this.destroyMap();
     this.destroyActiveRouteMap();
+  }
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => {
+        void this.router.navigateByUrl('/login');
+      },
+      error: (error: unknown) => {
+        this.errorMessage = apiErrorMessage(error, 'No se pudo cerrar la sesión.');
+      },
+    });
   }
 
   estimateFare(): void {

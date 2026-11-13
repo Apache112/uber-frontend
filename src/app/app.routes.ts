@@ -1,5 +1,6 @@
-import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import type { Routes } from '@angular/router';
+
+import { guestGuard, roleGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -8,26 +9,42 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'welcome',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/welcome/welcome.page').then((module) => module.WelcomePage),
+  },
+  {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/login/login.page').then((module) => module.LoginPage),
   },
   {
     path: 'register',
-    loadComponent: () => import('./pages/register/register.page').then( m => m.RegisterPage)
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/register/register.page').then((module) => module.RegisterPage),
   },
   {
     path: 'client-dashboard',
-    loadComponent: () => import('./pages/client-dashboard/client-dashboard.page').then( m => m.ClientDashboardPage),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./pages/client-dashboard/client-dashboard.page').then((module) => module.ClientDashboardPage),
+    canActivate: [roleGuard('client')],
   },
   {
     path: 'driver-dashboard',
-    loadComponent: () => import('./pages/driver-dashboard/driver-dashboard.page').then( m => m.DriverDashboardPage),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./pages/driver-dashboard/driver-dashboard.page').then((module) => module.DriverDashboardPage),
+    canActivate: [roleGuard('driver')],
   },
   {
     path: 'trip-history',
-    loadComponent: () => import('./pages/trip-history/trip-history.page').then( m => m.TripHistoryPage),
-    canActivate: [authGuard]
-  }
+    loadComponent: () => import('./pages/trip-history/trip-history.page').then((module) => module.TripHistoryPage),
+    canActivate: [roleGuard('client')],
+  },
+  {
+    path: 'admin-dashboard',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-dashboard.page').then((module) => module.AdminDashboardPage),
+    canActivate: [roleGuard('admin')],
+  },
+  { path: '**', redirectTo: '' },
 ];

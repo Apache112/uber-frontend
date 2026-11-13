@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import type { ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonContent,
@@ -17,6 +19,7 @@ import * as L from 'leaflet';
 import { apiErrorMessage } from '../../services/api-error';
 import type { DriverTrip, RideRequest } from '../../services/api.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 const ACTIVE_TRIP_KEY = 'driver_active_trip';
 const DRIVER_EARNINGS_KEY = 'driver_demo_earnings';
@@ -33,6 +36,7 @@ interface DriverEarnings {
   standalone: true,
   imports: [
     IonButton,
+    IonButtons,
     IonCard,
     IonCardContent,
     IonContent,
@@ -46,6 +50,8 @@ interface DriverEarnings {
 })
 export class DriverDashboardPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
   private requestRefreshTimer?: ReturnType<typeof setInterval>;
   private locationWatchId?: number;
   private routeMap?: L.Map;
@@ -99,6 +105,17 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
     if (this.requestRefreshTimer) {
       clearInterval(this.requestRefreshTimer);
     }
+  }
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => {
+        void this.router.navigateByUrl('/login');
+      },
+      error: (error: unknown) => {
+        this.errorMessage = apiErrorMessage(error, 'No se pudo cerrar la sesión.');
+      },
+    });
   }
 
   toggleAvailability(): void {
@@ -255,9 +272,7 @@ export class DriverDashboardPage implements OnInit, OnDestroy {
         }).format(amount);
   }
 
-  hasRouteCoordinates(
-    trip: DriverTrip,
-  ): trip is DriverTrip & {
+  hasRouteCoordinates(trip: DriverTrip): trip is DriverTrip & {
     origin_latitude: number;
     origin_longitude: number;
     destination_latitude: number;

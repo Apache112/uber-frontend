@@ -57,6 +57,8 @@ export class LoginPage {
           this.router.navigate(['/client-dashboard']);
         } else if (res.user.role === 'driver') {
           this.router.navigate(['/driver-dashboard']);
+        } else if (res.user.role === 'admin') {
+          this.router.navigate(['/admin-dashboard']);
         }
       },
       error: (err) => {

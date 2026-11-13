@@ -1,0 +1,80 @@
+ion-content {
+  --background:
+    radial-gradient(circle at 85% 14%, rgb(34 166 153 / 14%), transparent 30%),
+    linear-gradient(145deg, #f3f8fb, #e9f2f5);
+}
+
+.welcome-page {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  width: 100%;
+  max-width: 560px;
+  padding: clamp(28px, 7vw, 52px);
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 28px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 70px rgb(16 42 67 / 12%);
+}
+
+.brand-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin-bottom: 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #102a43, #168b89);
+  color: #fff;
+  font-size: 1.65rem;
+  font-weight: 850;
+  box-shadow: 0 10px 24px rgb(16 42 67 / 20%);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #138b85;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+h1 {
+  margin: 0;
+  color: #102a43;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.description,
+.welcome-note {
+  color: #607d8b;
+  line-height: 1.6;
+}
+
+.description {
+  margin: 16px 0 24px;
+  font-size: 1.05rem;
+}
+
+.welcome-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.welcome-actions ion-button {
+  --border-radius: 14px;
+  font-weight: 700;
+}
+
+.welcome-note {
+  margin: 22px 0 0;
+  font-size: 0.85rem;
+  text-align: center;
+}
