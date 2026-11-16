@@ -1,84 +1,27 @@
-ion-content {
-  --background: #e7e4d8;
-}
-
 .register-container {
-  width: min(100%, 680px);
-  margin: 10px auto 28px;
-  padding: clamp(22px, 5vw, 46px);
-  border-left: 5px solid #f0a51b;
-  background: #f4f1e8;
-  box-shadow: 10px 10px 0 rgb(23 58 58 / 12%);
-}
-
-.register-intro {
-  margin-bottom: 22px;
-}
-
-.brand-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100% - 32px);
+  max-width: 540px;
+  margin: 0 auto;
+  padding: clamp(20px, 6vw, 36px);
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 26px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 70px rgb(16 42 67 / 12%);
 }
 
-.brand-mark {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  background: #f0a51b;
-  color: #173a3a;
-  font-size: 1.2rem;
-  font-weight: 900;
-}
-
-.brand-name {
-  color: #173a3a;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  color: #9c6710;
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.14em;
-}
-
-.register-intro h1 {
-  margin: 0 0 8px;
-  color: #173a3a;
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
-  font-weight: 850;
-  letter-spacing: -0.06em;
-}
-
-.register-intro > p:last-child {
-  margin: 0;
-  color: #68716d;
+ion-content {
+  --background: linear-gradient(145deg, #f3f8fb, #e9f2f5);
 }
 
 ion-item {
-  --background: #fffdf7;
-  --border-radius: 3px;
+  --background: #f4f8fa;
+  --border-radius: 14px;
   margin: 8px 0;
-  border-bottom: 1px solid #deddd3;
-}
-
-ion-button {
-  --border-radius: 3px;
-  font-weight: 800;
 }
 
 .form-message {
-  text-align: left;
-}
-
-@media (min-width: 760px) {
-  .register-container {
-    margin-top: 24px;
-  }
+  text-align: center;
 }

@@ -1,103 +1,78 @@
 .dashboard-container {
   width: 100%;
-  max-width: 1120px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 8px 0 48px;
-}
-
-.toolbar-context {
-  color: #f0a51b;
-  font-size: 0.68em;
-  letter-spacing: 0.12em;
+  padding: 18px 0 42px;
 }
 
 .welcome {
   position: relative;
   overflow: hidden;
-  margin: 0 0 20px;
-  padding: clamp(20px, 4vw, 34px);
-  border-left: 6px solid #f0a51b;
-  background: #173a3a;
-  color: #fffdf7;
-}
-
-.welcome::after {
-  position: absolute;
-  right: -25px;
-  bottom: -70px;
-  width: 230px;
-  height: 160px;
-  border: 1px dashed rgb(240 165 27 / 45%);
-  border-radius: 50%;
-  content: '';
-  transform: rotate(-24deg);
+  margin: 8px 0 24px;
+  padding: clamp(24px, 6vw, 48px);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 88% 18%, rgb(255 255 255 / 20%) 0 70px, transparent 71px),
+    linear-gradient(130deg, #102a43, #176b87 65%, #22a699);
+  color: #fff;
+  box-shadow: 0 18px 38px rgb(16 42 67 / 18%);
 }
 
 .eyebrow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 10px;
-  color: #f0a51b;
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.14em;
+  color: #b7f4e8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
-.welcome h1 {
-  position: relative;
-  z-index: 1;
-  max-width: 760px;
-  margin: 0;
-  color: #fffdf7;
-  font-size: clamp(2rem, 6vw, 3.35rem);
-  font-weight: 850;
-  letter-spacing: -0.07em;
-  line-height: 1;
+h1 {
+  margin: 12px 0;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .welcome > p:last-child {
-  position: relative;
-  z-index: 1;
-  max-width: 550px;
-  margin: 12px 0 0;
-  color: #d3d9d0;
+  max-width: 540px;
+  color: rgb(255 255 255 / 82%);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+ion-card p {
+  color: var(--ion-color-medium);
+  line-height: 1.5;
 }
 
 ion-card {
-  margin: 12px 0 18px;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  box-shadow: 4px 4px 0 rgb(23 58 58 / 9%);
+  margin: 14px 0 22px;
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgb(16 42 67 / 8%);
 }
 
 ion-card h2 {
   margin-top: 0;
-  color: var(--forest);
-  font-size: 1.3rem;
-  font-weight: 800;
-}
-
-ion-card p {
-  color: var(--muted-ink);
-  line-height: 1.55;
+  color: #102a43;
+  font-size: 1.35rem;
+  font-weight: 750;
 }
 
 ion-list {
-  margin: 14px 0;
+  margin: 18px 0;
   background: transparent;
 }
 
 ion-item {
-  --background: #f4f1e8;
-  --border-radius: 3px;
-  margin: 7px 0;
-  border-bottom: 1px solid var(--line);
+  --background: #f5f8fb;
+  --border-radius: 14px;
+  margin: 8px 0;
 }
 
 ion-button {
-  --border-radius: 4px;
-  font-weight: 750;
+  --border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
 }
 
 .card-heading,
@@ -109,83 +84,92 @@ ion-button {
 }
 
 .step-label {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 0 7px;
-  color: #9c6710 !important;
-  font-size: 0.69rem;
-  font-weight: 850;
-  letter-spacing: 0.13em;
+  margin: 0 0 6px;
+  color: #138b85 !important;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
 }
 
 .heading-icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   place-items: center;
-  border: 1px solid #173a3a;
-  color: #173a3a;
-  font-size: 1.35rem;
+  border-radius: 15px;
+  background: #e6f5f2;
+  color: #087c78;
+  font-size: 1.7rem;
 }
 
 .map-frame {
-  position: sticky;
-  top: 0;
-  z-index: 5;
   overflow: hidden;
-  margin: 12px -8px 18px;
-  border: 1px solid #173a3a;
-  border-radius: 4px;
-  background: #172324;
-  box-shadow: 0 8px 20px rgb(23 35 36 / 16%);
+  margin: 14px 0 20px;
+  border: 1px solid #dfe9ef;
+  border-radius: 18px;
+  background: #edf4f6;
 }
 
 .live-map,
 .map-frame iframe {
   display: block;
   width: 100%;
-  height: min(42vh, 360px);
-  min-height: 240px;
+  height: 340px;
   border: 0;
+  z-index: 0;
 }
 
 .map-caption {
   justify-content: flex-start;
-  min-height: 38px;
+  min-height: 42px;
+  margin: 0;
   padding: 0 12px;
-  background: #173a3a;
-  color: #fffdf7;
-  font-size: 0.77rem;
+  color: #315466;
+  font-size: 0.85rem;
 }
 
 .live-dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #f0a51b;
-  box-shadow: 0 0 0 4px rgb(240 165 27 / 18%);
+  background: #16a085;
+  box-shadow: 0 0 0 4px rgb(22 160 133 / 14%);
 }
 
 .map-setup {
-  padding: 12px;
-  border-left: 3px solid #f0a51b;
-  background: #f7e9c9;
-  color: #5f4a20 !important;
-  font-size: 0.86rem;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff7e6;
+  color: #805b16 !important;
+  font-size: 0.88rem;
+}
+
+.location-coordinates {
+  color: #607d8b !important;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.street-view-note {
+  margin: 6px 4px 14px;
+  color: #607d8b !important;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 .estimate {
-  margin: 18px 0;
-  padding: 18px;
-  border-left: 4px solid #f0a51b;
-  background: #e9e5d9;
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #cceee4;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f0fbf7, #eaf5ff);
 }
 
 .estimate h3 {
   margin: 0;
-  color: var(--forest);
+  color: #102a43;
   font-size: 2rem;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .estimate p {
@@ -193,19 +177,20 @@ ion-button {
 }
 
 .estimate small {
-  color: var(--muted-ink);
+  color: #607d8b;
 }
 
 .estimate-email {
   display: grid;
-  gap: 8px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #d5e8e4;
 }
 
 .estimate-email ion-item {
-  --background: #fffdf7;
+  --background: rgb(255 255 255 / 78%);
+  margin: 0;
 }
 
 .section-heading {
@@ -215,27 +200,26 @@ ion-button {
 }
 
 .ride-status {
-  color: #9c6710 !important;
-  font-weight: 800;
+  color: var(--ion-color-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.form-message {
+  text-align: center;
 }
 
 @media (max-width: 520px) {
   .dashboard-container {
-    padding-top: 4px;
+    padding-top: 8px;
   }
 
   .welcome {
-    padding: 22px 18px;
-  }
-
-  .map-frame {
-    margin-right: -4px;
-    margin-left: -4px;
+    border-radius: 22px;
   }
 
   .live-map,
   .map-frame iframe {
-    height: 34vh;
-    min-height: 210px;
+    height: 300px;
   }
 }

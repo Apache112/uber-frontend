@@ -1,70 +1,66 @@
 .dashboard-container {
   width: 100%;
-  max-width: 1080px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 8px 0 42px;
-}
-
-.toolbar-context {
-  color: #f0a51b;
-  font-size: 0.68em;
-  letter-spacing: 0.12em;
+  padding: 18px 0 42px;
 }
 
 .welcome {
-  position: relative;
-  margin: 0 0 16px;
-  padding: clamp(22px, 5vw, 38px);
-  border-bottom: 5px solid #f0a51b;
-  background: #173a3a;
-  color: #fffdf7;
+  margin: 8px 0 24px;
+  padding: clamp(24px, 6vw, 48px);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 88% 18%, rgb(255 255 255 / 20%) 0 70px, transparent 71px),
+    linear-gradient(130deg, #102a43, #274c77 62%, #5b6cba);
+  color: #fff;
+  box-shadow: 0 18px 38px rgb(16 42 67 / 18%);
 }
 
 .eyebrow {
-  margin: 0 0 9px;
-  color: #f0a51b;
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.14em;
+  margin: 0 0 8px;
+  color: #c9d7ff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
-.welcome h1 {
-  margin: 0;
-  color: #fffdf7;
+h1 {
+  margin: 12px 0;
   font-size: clamp(2rem, 6vw, 3.4rem);
-  font-weight: 850;
-  letter-spacing: -0.07em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .welcome > p:last-child {
   max-width: 540px;
-  margin: 10px 0 0;
-  color: #d3d9d0;
-}
-
-ion-card {
-  margin: 12px 0 18px;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  box-shadow: 4px 4px 0 rgb(23 58 58 / 9%);
-}
-
-ion-card h2 {
-  margin-top: 0;
-  color: var(--forest);
-  font-size: 1.25rem;
-  font-weight: 800;
+  color: rgb(255 255 255 / 82%);
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 
 ion-card p,
 .hint {
-  color: var(--muted-ink);
+  color: var(--ion-color-medium);
   line-height: 1.5;
 }
 
-ion-button {
-  --border-radius: 4px;
+ion-card {
+  margin: 14px 0 22px;
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgb(16 42 67 / 8%);
+}
+
+ion-card h2 {
+  margin-top: 0;
+  color: #102a43;
+  font-size: 1.3rem;
   font-weight: 750;
+}
+
+ion-button {
+  --border-radius: 14px;
+  font-weight: 700;
 }
 
 .availability-row,
@@ -81,77 +77,72 @@ ion-button {
 
 .online,
 .trip-status {
-  color: #15734c !important;
-  font-weight: 800;
+  color: var(--ion-color-success) !important;
+  font-weight: 700;
 }
 
 .request {
-  margin: 12px 0;
-  padding: 16px;
-  border-left: 3px solid #f0a51b;
-  background: #f4f1e8;
+  padding: 16px 0;
+  border-top: 1px solid var(--ion-color-light-shade);
 }
 
 .request h3 {
   margin-top: 0;
-  color: var(--forest);
 }
 
 .route-map-frame {
   overflow: hidden;
   margin: 14px 0;
-  border: 1px solid #173a3a;
-  border-radius: 4px;
-  background: #172324;
+  border: 1px solid #dfe9ef;
+  border-radius: 18px;
+  background: #edf4f6;
 }
 
 .route-map {
   width: 100%;
-  height: min(42vh, 340px);
-  min-height: 220px;
+  height: 320px;
   z-index: 0;
 }
 
 .map-caption {
   margin: 0;
   padding: 10px 12px;
-  background: #173a3a;
-  color: #fffdf7 !important;
-  font-size: 0.8rem;
+  color: #315466 !important;
+  font-size: 0.85rem;
 }
 
 .earnings-card {
-  border-top: 4px solid #f0a51b;
-  background: #e7e4d8;
+  background: linear-gradient(135deg, #f1fbf7, #f2f6ff);
 }
 
 .earnings-card .eyebrow {
-  color: #9c6710;
+  color: #138b85;
 }
 
 .earnings-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 14px 0;
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .earnings-summary > div {
   display: grid;
   gap: 8px;
-  padding: 14px;
-  border-left: 3px solid #173a3a;
-  background: #fffdf7;
+  padding: 16px;
+  border: 1px solid rgb(19 139 133 / 13%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 78%);
 }
 
 .earnings-summary span {
-  color: var(--muted-ink);
-  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  font-size: 0.88rem;
 }
 
 .earnings-summary strong {
-  color: var(--forest);
-  font-size: clamp(1.25rem, 4vw, 1.8rem);
+  color: #102a43;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
 }
 
 .safety-card ion-card-content {
@@ -162,15 +153,16 @@ ion-button {
 }
 
 .safety-card .eyebrow {
-  color: #9d3326;
+  color: #bb4b43;
 }
 
 .emergency-link {
   flex: 0 0 auto;
   padding: 12px 16px;
-  border: 1px solid #9d3326;
-  color: #9d3326;
-  font-weight: 850;
+  border-radius: 14px;
+  background: #fff0ef;
+  color: #b42318;
+  font-weight: 800;
   text-decoration: none;
 }
 
@@ -180,14 +172,14 @@ ion-button {
 }
 
 .error {
-  color: #9d3326;
+  color: var(--ion-color-danger);
 }
 
 .success {
-  color: #15734c;
+  color: var(--ion-color-success);
 }
 
-@media (max-width: 460px) {
+@media (max-width: 420px) {
   .availability-row,
   .safety-card ion-card-content {
     align-items: flex-start;

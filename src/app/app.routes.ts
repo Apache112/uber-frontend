@@ -6,8 +6,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [guestGuard],
-    loadComponent: () => import('./pages/welcome/welcome.page').then((module) => module.WelcomePage),
+    redirectTo: 'login',
   },
   {
     path: 'welcome',
@@ -47,5 +46,5 @@ export const routes: Routes = [
       import('./pages/admin-dashboard/admin-dashboard.page').then((module) => module.AdminDashboardPage),
     canActivate: [roleGuard('admin')],
   },
-  { path: '**', redirectTo: '' },
+  { path: '**', redirectTo: 'login' },
 ];

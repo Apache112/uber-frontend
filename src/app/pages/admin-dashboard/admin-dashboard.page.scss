@@ -5,12 +5,6 @@
   padding: 8px 0 42px;
 }
 
-.toolbar-context {
-  color: #f0a51b;
-  font-size: 0.68em;
-  letter-spacing: 0.12em;
-}
-
 .section-heading,
 .item-heading {
   display: flex;
@@ -21,62 +15,60 @@
 
 .section-heading {
   margin: 4px 0 18px;
-  padding: 18px;
-  border-left: 5px solid #f0a51b;
-  background: #173a3a;
-  color: #fffdf7;
+  padding: 20px;
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 22px;
+  background: linear-gradient(130deg, #102a43, #176b87 65%, #22a699);
+  color: #fff;
+  box-shadow: 0 12px 30px rgb(16 42 67 / 12%);
 }
 
 .section-heading h1 {
   margin: 0;
   color: inherit;
   font-size: clamp(1.7rem, 5vw, 2.4rem);
-  font-weight: 850;
-  letter-spacing: -0.06em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .eyebrow {
   margin: 0 0 5px;
-  color: #f0a51b;
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.14em;
-}
-
-.section-heading ion-button {
-  --color: #fffdf7;
-  --border-color: #f0a51b;
+  color: #b7f4e8;
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
 }
 
 .tabs-scroll,
 .filters {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   overflow-x: auto;
   padding: 10px 12px;
-  background: #f4f1e8;
-  border-bottom: 1px solid #deddd3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 18px rgb(16 42 67 / 6%);
 }
 
 .tabs-scroll button,
 .filters button {
   flex: 0 0 auto;
   padding: 8px 13px;
-  border: 1px solid #173a3a;
-  border-radius: 2px;
-  background: transparent;
-  color: #173a3a;
+  border: 1px solid #dfe9ef;
+  border-radius: 18px;
+  background: #f5f8fb;
+  color: #315466;
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 750;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .tabs-scroll button.active,
 .filters button.selected {
-  border-color: #173a3a;
-  background: #173a3a;
-  color: #fffdf7;
+  border-color: #176b87;
+  background: #176b87;
+  color: #fff;
 }
 
 .filters {
@@ -84,19 +76,20 @@
   padding: 0 0 12px;
   border: 0;
   background: transparent;
+  box-shadow: none;
 }
 
 ion-card {
   margin: 12px 0;
-  border: 1px solid #deddd3;
-  border-radius: 3px;
-  box-shadow: 4px 4px 0 rgb(23 58 58 / 8%);
+  border: 1px solid rgb(20 80 96 / 7%);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgb(16 42 67 / 7%);
 }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
@@ -104,47 +97,49 @@ ion-card {
   display: grid;
   gap: 6px;
   padding: 16px;
-  border-top: 3px solid #f0a51b;
-  background: #fffdf7;
+  border: 1px solid #dfe9ef;
+  border-radius: 16px;
+  background: #fff;
 }
 
 .stat strong,
 .revenue {
-  color: #173a3a;
+  color: #102a43;
   font-size: 1.65rem;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .stat span {
-  color: #68716d;
+  color: #607d8b;
   font-size: 0.82rem;
 }
 
 .item-heading h2 {
   margin: 0;
-  color: #173a3a;
+  color: #102a43;
   font-size: 1.1rem;
 }
 
 .item-heading p,
 ion-card p {
-  color: #68716d;
+  color: var(--ion-color-medium);
   line-height: 1.5;
 }
 
 .status {
   flex: 0 0 auto;
-  padding: 4px 8px;
-  background: #e7e4d8;
-  color: #173a3a;
+  padding: 5px 10px;
+  border-radius: 14px;
+  background: #e7f2f5;
+  color: #315466;
   font-size: 0.74rem;
-  font-weight: 800;
+  font-weight: 750;
   text-transform: uppercase;
 }
 
 .status.active-status {
-  background: #dce8d9;
-  color: #23513a;
+  background: #dff3ec;
+  color: #087c78;
 }
 
 .actions {
@@ -162,14 +157,13 @@ ion-card p {
 }
 
 ion-item {
-  --background: #f4f1e8;
-  --border-radius: 3px;
+  --background: #f4f8fa;
+  --border-radius: 14px;
   margin: 7px 0;
-  border-bottom: 1px solid #deddd3;
 }
 
 ion-button {
-  --border-radius: 3px;
+  --border-radius: 14px;
 }
 
 .form-message,
@@ -181,18 +175,20 @@ ion-button {
 
 .json-panel {
   padding: 16px;
-  border-top: 4px solid #f0a51b;
-  background: #e7e4d8;
+  border: 1px solid #dfe9ef;
+  border-radius: 18px;
+  background: #f5f8fb;
 }
 
 .json-panel h2 {
-  color: #173a3a;
+  color: #102a43;
 }
 
 .json-panel pre {
   overflow: auto;
   padding: 14px;
-  background: #fffdf7;
+  border-radius: 12px;
+  background: #fff;
   font-size: 0.8rem;
 }
 
@@ -202,10 +198,7 @@ ion-button {
     align-items: flex-start;
   }
 
-  .section-heading {
-    flex-direction: column;
-  }
-
+  .section-heading,
   .item-heading {
     flex-direction: column;
   }

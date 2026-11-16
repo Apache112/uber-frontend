@@ -1,18 +1,16 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Rumbo · acceso</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>Iniciar Sesión - Uber</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <div class="login-container">
     <section class="login-intro">
-      <div class="brand-row">
-        <span class="brand-mark" aria-hidden="true">R</span><span class="brand-name">RUMBO</span>
-      </div>
-      <p class="eyebrow">TU PRÓXIMO TRAYECTO</p>
-      <h1>Qué bueno tenerte de vuelta.</h1>
-      <p>Accede a tu espacio y continúa tu camino.</p>
+      <span class="brand-mark" aria-hidden="true">U</span>
+      <p class="eyebrow">TU CIUDAD, A TU RITMO</p>
+      <h1>Qué bueno verte</h1>
+      <p>Inicia sesión y sigamos moviéndonos.</p>
     </section>
     <ion-list lines="none">
       <ion-item>
@@ -43,7 +41,6 @@
     <div class="ion-margin-top">
       <ion-button expand="block" (click)="onLogin()">Ingresar</ion-button>
       <ion-button expand="block" fill="clear" [routerLink]="['/register']">¿No tienes cuenta? Regístrate</ion-button>
-      <ion-button expand="block" fill="clear" [routerLink]="['/welcome']">Volver al inicio</ion-button>
     </div>
   </div>
 </ion-content>
