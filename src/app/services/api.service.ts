@@ -198,18 +198,27 @@ export class ApiService {
   }
 
   activeFare(): Observable<{ success?: boolean; fare: AdminFare }> {
-    return this.http.get<{ success?: boolean; fare: AdminFare }>(`${this.apiUrl}/fares/active`);
+    return this.withOfflineFallback(
+      this.http.get<{ success?: boolean; fare: AdminFare }>(`${this.apiUrl}/fares/active`),
+      () => this.offline.getActiveFare(),
+    );
   }
 
   adminDashboard(): Observable<AdminDashboard> {
-    return this.http.get<AdminDashboard>(`${this.apiUrl}/admin/dashboard`);
+    return this.withOfflineFallback(
+      this.http.get<AdminDashboard>(`${this.apiUrl}/admin/dashboard`),
+      () => this.offline.getAdminDashboard(),
+    );
   }
 
   adminDrivers(approvalStatus?: string): Observable<{ success?: boolean; drivers: AdminDriver[] }> {
     const url = approvalStatus
       ? `${this.apiUrl}/admin/drivers?approval_status=${encodeURIComponent(approvalStatus)}`
       : `${this.apiUrl}/admin/drivers`;
-    return this.http.get<{ success?: boolean; drivers: AdminDriver[] }>(url);
+    return this.withOfflineFallback(
+      this.http.get<{ success?: boolean; drivers: AdminDriver[] }>(url),
+      () => this.offline.getAdminDrivers(approvalStatus),
+    );
   }
 
   adminApproval(
@@ -217,33 +226,51 @@ export class ApiService {
     approvalStatus: 'approved' | 'suspended' | 'rejected',
     adminNotes: string,
   ): Observable<{ success?: boolean; message: string; driver?: AdminDriver }> {
-    return this.http.patch<{ success?: boolean; message: string; driver?: AdminDriver }>(
-      `${this.apiUrl}/admin/drivers/${id}/approval`,
-      { approval_status: approvalStatus, admin_notes: adminNotes },
+    return this.withOfflineFallback(
+      this.http.patch<{ success?: boolean; message: string; driver?: AdminDriver }>(
+        `${this.apiUrl}/admin/drivers/${id}/approval`,
+        { approval_status: approvalStatus, admin_notes: adminNotes },
+      ),
+      () => this.offline.updateAdminApproval(id, approvalStatus, adminNotes),
     );
   }
 
   adminFares(): Observable<{ success?: boolean; fares: AdminFare[] }> {
-    return this.http.get<{ success?: boolean; fares: AdminFare[] }>(`${this.apiUrl}/admin/fares`);
+    return this.withOfflineFallback(
+      this.http.get<{ success?: boolean; fares: AdminFare[] }>(`${this.apiUrl}/admin/fares`),
+      () => this.offline.getAdminFares(),
+    );
   }
 
   adminCreateFare(fare: AdminFare): Observable<{ success?: boolean; message: string; fare: AdminFare }> {
-    return this.http.post<{ success?: boolean; message: string; fare: AdminFare }>(`${this.apiUrl}/admin/fares`, fare);
+    return this.withOfflineFallback(
+      this.http.post<{ success?: boolean; message: string; fare: AdminFare }>(`${this.apiUrl}/admin/fares`, fare),
+      () => this.offline.createAdminFare(fare),
+    );
   }
 
   adminTrips(status?: string): Observable<{ success?: boolean; trips: AdminTrip[] | { data: AdminTrip[] } }> {
     const url = status
       ? `${this.apiUrl}/admin/trips?status=${encodeURIComponent(status)}`
       : `${this.apiUrl}/admin/trips`;
-    return this.http.get<{ success?: boolean; trips: AdminTrip[] | { data: AdminTrip[] } }>(url);
+    return this.withOfflineFallback(
+      this.http.get<{ success?: boolean; trips: AdminTrip[] | { data: AdminTrip[] } }>(url),
+      () => this.offline.getAdminTrips(status),
+    );
   }
 
   adminReports(): Observable<unknown> {
-    return this.http.get<unknown>(`${this.apiUrl}/admin/reports`);
+    return this.withOfflineFallback(
+      this.http.get<unknown>(`${this.apiUrl}/admin/reports`),
+      () => this.offline.getAdminReports(),
+    );
   }
 
   adminAuditLogs(): Observable<unknown> {
-    return this.http.get<unknown>(`${this.apiUrl}/admin/audit-logs`);
+    return this.withOfflineFallback(
+      this.http.get<unknown>(`${this.apiUrl}/admin/audit-logs`),
+      () => this.offline.getAdminAuditLogs(),
+    );
   }
 
   toggleAvailability(status: 'available' | 'unavailable'): Observable<{
