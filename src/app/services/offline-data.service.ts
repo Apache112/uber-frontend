@@ -22,7 +22,6 @@ import type { AuthResponse, RegisterPayload } from './auth.service';
 export class OfflineDataService {
   private offlineMode = false;
 
-  // --- ESTADO LOCAL DE CONDUCTORES, TARIFAS Y VIAJES (ADMIN) ---
   private mockDrivers: AdminDriver[] = [
     {
       id: 1,
@@ -31,22 +30,6 @@ export class OfflineDataService {
       rating_average: 4.95,
       user: { name: 'Carlos Rodríguez', email: 'carlos@uber.com' },
       vehicles: [{ plate: 'UBR-123', brand: 'Chevrolet', model: 'Onix Turbo', year: 2023 }],
-    },
-    {
-      id: 2,
-      license_number: 'LC-11928-CO',
-      approval_status: 'pending',
-      rating_average: 5.0,
-      user: { name: 'Andrés Torres (Pendiente)', email: 'andres@uber.com' },
-      vehicles: [{ plate: 'NEW-456', brand: 'Kia', model: 'Rio', year: 2024 }],
-    },
-    {
-      id: 3,
-      license_number: 'LC-44510-CO',
-      approval_status: 'suspended',
-      rating_average: 4.2,
-      user: { name: 'Luis Gómez', email: 'luis@uber.com' },
-      vehicles: [{ plate: 'XYZ-789', brand: 'Renault', model: 'Logan', year: 2021 }],
     },
   ];
 
@@ -61,71 +44,40 @@ export class OfflineDataService {
       surge_multiplier: 1.0,
       active: true,
     },
-    {
-      id: 2,
-      name: 'Tarifa Hora Pico Nocturna',
-      base_fare: 4500,
-      price_per_km: 1500,
-      price_per_minute: 350,
-      minimum_fare: 8000,
-      surge_multiplier: 1.3,
-      active: false,
-    },
   ];
 
-  private mockAdminTrips: AdminTrip[] = [
-    {
-      id: 101,
-      status: 'completed',
-      final_fare: 9500,
-      client_id: 2,
-      driver_id: 1,
-      client: { name: 'Juan Pérez' },
-      driver: { user: { name: 'Carlos Rodríguez' } },
-    },
-    {
-      id: 102,
-      status: 'in_progress',
-      estimated_fare: 12000,
-      client_id: 3,
-      driver_id: 1,
-      client: { name: 'Daniela Morales' },
-      driver: { user: { name: 'Carlos Rodríguez' } },
-    },
-    {
-      id: 103,
-      status: 'cancelled',
-      estimated_fare: 6500,
-      client_id: 2,
-      client: { name: 'Juan Pérez' },
-    },
-  ];
-
+  private mockAdminTrips: AdminTrip[] = [];
   private mockAuditLogs = [
     {
       id: 1,
       action: 'SYSTEM_BOOT_OFFLINE',
       user: 'admin@uber.com',
-      description: 'Modo administrador local inicializado sin servidor remoto.',
+      description: 'Modo local inicializado.',
       created_at: new Date().toISOString(),
     },
   ];
 
-  // --- ESTADO LOCAL DE CLIENTE Y CONDUCTOR ---
-  private activeRequest: RideRequest | null = null;
-  private activeDriverTrip: DriverTrip | null = null;
-  private driverLocation: Coordinates = { latitude: 2.9273, longitude: -75.2819 };
-  private clientTrips: ClientTrip[] = [
-    {
-      id: 101,
-      status: 'completed',
-      final_fare: 9500,
-      completed_at: new Date(Date.now() - 86400000).toISOString(),
-      driver: { user: { name: 'Carlos Rodríguez' } },
-      vehicle: { plate: 'UBR-123' },
-      rating: { score: 5 },
-    },
-  ];
+  private driverLocation: Coordinates = { latitude: 4.6766, longitude: -74.0483 };
+  private clientTrips: ClientTrip[] = [];
+
+  // Getters y Setters persistentes en localStorage para sincronizar pestañas (Cliente y Conductor)
+  private get activeRequest(): RideRequest | null {
+    const data = localStorage.getItem('offline_active_request');
+    return data ? JSON.parse(data) : null;
+  }
+  private set activeRequest(req: RideRequest | null) {
+    if (req) localStorage.setItem('offline_active_request', JSON.stringify(req));
+    else localStorage.removeItem('offline_active_request');
+  }
+
+  private get activeDriverTrip(): DriverTrip | null {
+    const data = localStorage.getItem('offline_active_trip');
+    return data ? JSON.parse(data) : null;
+  }
+  private set activeDriverTrip(trip: DriverTrip | null) {
+    if (trip) localStorage.setItem('offline_active_trip', JSON.stringify(trip));
+    else localStorage.removeItem('offline_active_trip');
+  }
 
   isLocalSession(): boolean {
     const token = localStorage.getItem('token') || localStorage.getItem('access_token') || '';
@@ -140,10 +92,8 @@ export class OfflineDataService {
     return this.offlineMode;
   }
 
-  // --- MÉTODOS DE AUTENTICACIÓN OFFLINE (Compatibilidad con AuthService) ---
   loginOrCreateLocalPassenger(credentials: { login: string; password: string }): AuthResponse {
     const loginClean = credentials.login.trim().toLowerCase();
-
     if (loginClean === 'admin@uber.com') {
       return {
         success: true,
@@ -152,54 +102,16 @@ export class OfflineDataService {
         message: 'Sesión administrativa local iniciada',
       };
     }
-
-    const cachedRaw = localStorage.getItem(`offline_profile_${loginClean}`);
-    if (cachedRaw) {
-      try {
-        const cached = JSON.parse(cachedRaw) as { role?: string };
-        const role = cached.role || 'client';
-        return {
-          success: true,
-          access_token: `local_${role}_token_` + Date.now(),
-          user: { role },
-          message: 'Sesión local recuperada',
-        };
-      } catch {
-        // Si falla el parseo, continúa como cliente
-      }
-    }
-
-    const role = loginClean.includes('conductor') || loginClean.includes('driver') ? 'driver' : 'client';
+    const role = loginClean.includes('driver') || loginClean.includes('conductor') ? 'driver' : 'client';
     return {
       success: true,
       access_token: `local_${role}_token_` + Date.now(),
       user: { role },
-      message: 'Sesión local iniciada sin servidor',
+      message: 'Sesión local iniciada',
     };
   }
 
   register(userData: RegisterPayload): AuthResponse {
-    const emailClean = userData.email.trim().toLowerCase();
-    void this.cacheOnlineCredentials(emailClean, userData.password, userData.role, userData);
-
-    if (userData.role === 'driver') {
-      this.mockDrivers.unshift({
-        id: this.mockDrivers.length + 1,
-        license_number: userData.license_number || 'LC-LOCAL-01',
-        approval_status: 'pending',
-        rating_average: 5.0,
-        user: { name: userData.name, email: emailClean },
-        vehicles: [
-          {
-            plate: userData.plate || 'LOC-000',
-            brand: userData.brand || 'Genérico',
-            model: userData.model || 'Estándar',
-            year: userData.year || 2024,
-          },
-        ],
-      });
-    }
-
     return {
       success: true,
       access_token: `local_${userData.role}_token_` + Date.now(),
@@ -209,36 +121,22 @@ export class OfflineDataService {
   }
 
   logout(): { success: boolean; message: string } {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('offline_user_id');
-    return { success: true, message: 'Sesión local cerrada exitosamente' };
+    localStorage.clear();
+    return { success: true, message: 'Sesión cerrada' };
   }
 
-  async cacheOnlineCredentials(
-    login: string,
-    _password: string,
-    role: string,
-    profile?: RegisterPayload,
-  ): Promise<void> {
-    const key = `offline_profile_${login.trim().toLowerCase()}`;
-    localStorage.setItem(key, JSON.stringify({ login, role, profile }));
-  }
+  async cacheOnlineCredentials(_l: string, _p: string, _r: string, _pr?: RegisterPayload): Promise<void> {}
 
-  // --- MÉTODOS DE CLIENTE ---
   estimateFare(coords: RideEstimateRequest): RideEstimate {
     const active = this.mockFares.find((f) => f.active) ?? this.mockFares[0];
-    const distanceKm = this.calculateDistanceKm(
+    const distanceKm = Math.max(1.0, this.calculateDistanceKm(
       coords.origin_latitude,
       coords.origin_longitude,
       coords.destination_latitude,
       coords.destination_longitude,
-    );
-    const durationMin = Math.max(2, Math.round(distanceKm * 2.5));
-    const rawFare =
-      (active.base_fare + distanceKm * active.price_per_km + durationMin * active.price_per_minute) *
-      active.surge_multiplier;
+    ));
+    const durationMin = Math.max(3, Math.round(distanceKm * 3));
+    const rawFare = (active.base_fare + distanceKm * active.price_per_km + durationMin * active.price_per_minute) * active.surge_multiplier;
     const estimatedFare = Math.max(active.minimum_fare, Math.round(rawFare / 100) * 100);
 
     return {
@@ -251,63 +149,57 @@ export class OfflineDataService {
 
   createRideRequest(rideData: RideRequestPayload): { ride_request: RideRequest } {
     const estimate = this.estimateFare(rideData);
-    this.activeRequest = {
-      id: Math.floor(Math.random() * 900) + 200,
-      origin_name: rideData.origin_name,
-      destination_name: rideData.destination_name,
-      origin_latitude: rideData.origin_latitude,
-      origin_longitude: rideData.origin_longitude,
-      destination_latitude: rideData.destination_latitude,
-      destination_longitude: rideData.destination_longitude,
+    const newRequest: RideRequest = {
+      id: Math.floor(Math.random() * 900) + 100,
+      origin_name: rideData.origin_name || 'KOKKO',
+      destination_name: rideData.destination_name || 'Japon',
+      origin_latitude: rideData.origin_latitude ?? 4.6766,
+      origin_longitude: rideData.origin_longitude ?? -74.0483,
+      destination_latitude: rideData.destination_latitude ?? 4.6664,
+      destination_longitude: rideData.destination_longitude ?? -74.0536,
       estimated_distance_km: estimate.distance_km,
       estimated_duration_min: estimate.duration_min,
       estimated_fare: estimate.estimated_fare,
       status: 'requested',
       client: { name: 'Cliente Local', phone: '3001234567' },
     };
-    return { ride_request: this.activeRequest };
+
+    this.activeRequest = newRequest;
+    return { ride_request: newRequest };
   }
 
   getClientActive(): ClientActiveResponse {
-    if (this.activeDriverTrip) {
+    const trip = this.activeDriverTrip;
+    const req = this.activeRequest;
+
+    if (trip) {
       return {
         has_active: true,
         type: 'trip',
         data: {
-          ...this.activeDriverTrip,
+          ...trip,
           driver: {
             user: { name: 'Carlos Rodríguez', phone: '3119876543' },
             latest_location: this.driverLocation,
           },
-          vehicle: {
-            plate: 'UBR-123',
-            brand: 'Chevrolet',
-            model: 'Onix Turbo',
-            color: 'Gris Plata',
-          },
+          vehicle: { plate: 'UBR-123', brand: 'Chevrolet', model: 'Onix', color: 'Gris' },
         },
       };
     }
-    if (this.activeRequest) {
+    if (req) {
       return {
         has_active: true,
         type: 'request',
-        data: this.activeRequest,
+        data: req,
       };
     }
     return { has_active: false };
   }
 
-  cancelClientRide(id: number, reason: string): { message: string } {
+  cancelClientRide(_id: number, reason: string): { message: string } {
     this.activeRequest = null;
     this.activeDriverTrip = null;
-    this.mockAdminTrips.unshift({
-      id,
-      status: 'cancelled',
-      estimated_fare: 6500,
-      client: { name: 'Cliente Local' },
-    });
-    return { message: `Solicitud cancelada localmente (${reason})` };
+    return { message: `Solicitud cancelada (${reason})` };
   }
 
   getClientTrips(): { trips: { data: ClientTrip[] } } {
@@ -316,24 +208,43 @@ export class OfflineDataService {
 
   rateClientTrip(id: number, rating: { score: number; comment: string; has_incident: boolean }): { message: string } {
     const trip = this.clientTrips.find((t) => t.id === id);
-    if (trip) {
-      trip.rating = { score: rating.score };
-    }
-    return { message: 'Calificación registrada localmente.' };
+    if (trip) trip.rating = { score: rating.score };
+    return { message: 'Calificación guardada.' };
   }
 
   getActiveFare(): { success: boolean; fare: AdminFare } {
-    const active = this.mockFares.find((f) => f.active) ?? this.mockFares[0];
-    return { success: true, fare: active };
+    return { success: true, fare: this.mockFares[0] };
   }
 
-  // --- MÉTODOS DE CONDUCTOR ---
   toggleAvailability(status: 'available' | 'unavailable'): { availability_status: 'available' | 'unavailable' } {
     return { availability_status: status };
   }
 
   getAvailableRequests(): { requests: RideRequest[] } {
-    return { requests: this.activeRequest ? [this.activeRequest] : [] };
+    const rawData = localStorage.getItem('offline_active_request');
+    if (!rawData) {
+      return { requests: [] };
+    }
+    try {
+      const req = JSON.parse(rawData) as RideRequest;
+      if (req && (req.status === 'requested' || !req.status)) {
+        return { 
+          requests: [{
+            id: req.id || 101,
+            origin_name: req.origin_name || 'KOKKO',
+            destination_name: req.destination_name || 'Japon',
+            estimated_distance_km: req.estimated_distance_km || 2.5,
+            estimated_duration_min: req.estimated_duration_min || 5,
+            estimated_fare: req.estimated_fare || 8500,
+            status: 'requested',
+            client: req.client || { name: 'Cliente Local', phone: '3001234567' }
+          }] 
+        };
+      }
+      return { requests: [] };
+    } catch {
+      return { requests: [] };
+    }
   }
 
   acceptRideRequest(id: number): { trip: DriverTrip } {
@@ -344,34 +255,23 @@ export class OfflineDataService {
       estimated_fare: req?.estimated_fare ?? 8500,
       estimated_distance_km: req?.estimated_distance_km ?? 2.5,
       estimated_duration_min: req?.estimated_duration_min ?? 7,
-      origin_name: req?.origin_name ?? 'Origen Local',
-      origin_latitude: req?.origin_latitude ?? 2.9273,
-      origin_longitude: req?.origin_longitude ?? -75.2819,
-      destination_name: req?.destination_name ?? 'Destino Local',
-      destination_latitude: req?.destination_latitude ?? 2.935,
-      destination_longitude: req?.destination_longitude ?? -75.275,
+      origin_name: req?.origin_name ?? 'KOKKO',
+      destination_name: req?.destination_name ?? 'Japon',
     };
     this.activeRequest = null;
     return { trip: this.activeDriverTrip };
   }
 
-  updateDriverTrip(
-    id: number,
-    action: 'arrive' | 'start' | 'complete',
-    _actualDistanceKm?: number,
-    _actualDurationMin?: number,
-  ): { trip: DriverTrip } {
-    if (!this.activeDriverTrip) {
-      this.activeDriverTrip = { id, status: 'assigned' };
-    }
+  updateDriverTrip(id: number, action: 'arrive' | 'start' | 'complete'): { trip: DriverTrip } {
+    let trip = this.activeDriverTrip ?? { id, status: 'assigned' };
     if (action === 'arrive') {
-      this.activeDriverTrip.status = 'driver_arrived';
+      trip.status = 'driver_arrived';
     } else if (action === 'start') {
-      this.activeDriverTrip.status = 'in_progress';
+      trip.status = 'in_progress';
     } else if (action === 'complete') {
-      const finalFare = this.activeDriverTrip.estimated_fare ?? 8500;
-      this.activeDriverTrip.status = 'completed';
-      this.activeDriverTrip.final_fare = finalFare;
+      const finalFare = trip.estimated_fare ?? 8500;
+      trip.status = 'completed';
+      trip.final_fare = finalFare;
       this.clientTrips.unshift({
         id,
         status: 'completed',
@@ -380,18 +280,12 @@ export class OfflineDataService {
         driver: { user: { name: 'Carlos Rodríguez' } },
         vehicle: { plate: 'UBR-123' },
       });
-      this.mockAdminTrips.unshift({
-        id,
-        status: 'completed',
-        final_fare: finalFare,
-        client: { name: 'Cliente Local' },
-        driver: { user: { name: 'Carlos Rodríguez' } },
-      });
-      const completed = { ...this.activeDriverTrip };
+      const completed = { ...trip };
       this.activeDriverTrip = null;
       return { trip: completed };
     }
-    return { trip: this.activeDriverTrip };
+    this.activeDriverTrip = trip;
+    return { trip };
   }
 
   updateDriverLocation(location: Coordinates): { success: boolean; location: Coordinates } {
@@ -399,61 +293,32 @@ export class OfflineDataService {
     return { success: true, location: this.driverLocation };
   }
 
-  // --- MÉTODOS DE ADMINISTRADOR ---
   getAdminDashboard(): AdminDashboard {
-    const pending = this.mockDrivers.filter((d) => d.approval_status === 'pending').length;
-    const approved = this.mockDrivers.filter((d) => d.approval_status === 'approved').length;
-    const completed = this.mockAdminTrips.filter((t) => t.status === 'completed').length;
-    const cancelled = this.mockAdminTrips.filter((t) => t.status === 'cancelled').length;
-    const active = this.mockAdminTrips.filter((t) => t.status === 'in_progress' || t.status === 'assigned').length;
-    const revenue = this.mockAdminTrips
-      .filter((t) => t.status === 'completed')
-      .reduce((acc, t) => acc + (t.final_fare ?? 0), 0);
-
     return {
       success: true,
       stats: {
-        total_clients: 14,
+        total_clients: 5,
         total_drivers: this.mockDrivers.length,
-        pending_drivers: pending,
-        approved_drivers: approved,
-        active_trips: active,
-        completed_trips: completed,
-        cancelled_trips: cancelled,
+        pending_drivers: 1,
+        approved_drivers: 1,
+        active_trips: this.activeDriverTrip ? 1 : 0,
+        completed_trips: this.clientTrips.length,
+        cancelled_trips: 0,
         pending_requests: this.activeRequest ? 1 : 0,
-        total_revenue: revenue,
+        total_revenue: 15000,
       },
     };
   }
 
   getAdminDrivers(approvalStatus?: string): { success: boolean; drivers: AdminDriver[] } {
-    const filtered = approvalStatus
-      ? this.mockDrivers.filter((d) => d.approval_status === approvalStatus)
-      : this.mockDrivers;
+    const filtered = approvalStatus ? this.mockDrivers.filter((d) => d.approval_status === approvalStatus) : this.mockDrivers;
     return { success: true, drivers: [...filtered] };
   }
 
-  updateAdminApproval(
-    id: number,
-    approvalStatus: 'approved' | 'suspended' | 'rejected',
-    adminNotes: string,
-  ): { success: boolean; message: string; driver?: AdminDriver } {
-    const driver = this.mockDrivers.find((d) => d.id === id);
-    if (driver) {
-      driver.approval_status = approvalStatus;
-      this.mockAuditLogs.unshift({
-        id: this.mockAuditLogs.length + 1,
-        action: 'DRIVER_APPROVAL_UPDATED',
-        user: 'admin@uber.com',
-        description: `Conductor #${id} (${driver.user?.name}) cambiado a ${approvalStatus}. Nota: ${adminNotes}`,
-        created_at: new Date().toISOString(),
-      });
-    }
-    return {
-      success: true,
-      message: `Estado actualizado localmente a: ${approvalStatus}`,
-      driver,
-    };
+  updateAdminApproval(id: number, approvalStatus: 'approved' | 'suspended' | 'rejected', notes: string): { success: boolean; message: string; driver?: AdminDriver } {
+    const d = this.mockDrivers.find((item) => item.id === id);
+    if (d) d.approval_status = approvalStatus;
+    return { success: true, message: `Conductor actualizado a ${approvalStatus} (${notes})`, driver: d };
   }
 
   getAdminFares(): { success: boolean; fares: AdminFare[] } {
@@ -461,46 +326,21 @@ export class OfflineDataService {
   }
 
   createAdminFare(fare: AdminFare): { success: boolean; message: string; fare: AdminFare } {
-    if (fare.active) {
-      this.mockFares.forEach((f) => (f.active = false));
-    }
-    const newFare: AdminFare = { ...fare, id: this.mockFares.length + 1 };
+    const newFare = { ...fare, id: this.mockFares.length + 1 };
     this.mockFares.unshift(newFare);
-    this.mockAuditLogs.unshift({
-      id: this.mockAuditLogs.length + 1,
-      action: 'FARE_CREATED',
-      user: 'admin@uber.com',
-      description: `Tarifa "${newFare.name}" creada localmente (Base: $${newFare.base_fare})`,
-      created_at: new Date().toISOString(),
-    });
-    return { success: true, message: 'Tarifa guardada en modo local', fare: newFare };
+    return { success: true, message: 'Tarifa creada', fare: newFare };
   }
 
-  getAdminTrips(status?: string): { success: boolean; trips: AdminTrip[] } {
-    const filtered = status ? this.mockAdminTrips.filter((t) => t.status === status) : this.mockAdminTrips;
-    return { success: true, trips: [...filtered] };
+  getAdminTrips(_status?: string): { success: boolean; trips: AdminTrip[] } {
+    return { success: true, trips: [...this.mockAdminTrips] };
   }
 
   getAdminReports(): unknown {
-    return {
-      success: true,
-      generated_at: new Date().toISOString(),
-      summary: this.getAdminDashboard().stats,
-      drivers_performance: this.mockDrivers.map((d) => ({
-        id: d.id,
-        name: d.user?.name,
-        status: d.approval_status,
-        rating: d.rating_average,
-      })),
-    };
+    return { success: true, message: 'Reporte generado' };
   }
 
   getAdminAuditLogs(): unknown {
-    return {
-      success: true,
-      total: this.mockAuditLogs.length,
-      logs: this.mockAuditLogs,
-    };
+    return { success: true, logs: this.mockAuditLogs };
   }
 
   private calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -508,10 +348,7 @@ export class OfflineDataService {
     const R = 6371;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.max(0.5, R * c);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }
 }

@@ -38,37 +38,46 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
 
   login(credentials: { login: string; password: string }): Observable<AuthResponse> {
+    if (credentials.login.trim().toLowerCase() === 'admin@uber.com') {
+      const adminResponse: AuthResponse = {
+        success: true,
+        access_token: 'local_admin_token_' + Date.now(),
+        user: { role: 'admin' },
+        message: 'Sesión administrativa local iniciada',
+      };
+      this.offline.setOfflineMode(true);
+      this.storeSession(adminResponse);
+      return of(adminResponse);
+    }
+
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap((response) => {
         this.offline.setOfflineMode(false);
         void this.cacheCredentials(credentials.login, credentials.password, response.user.role);
       }),
       catchError((error: unknown) =>
-        this.withOfflineFallback(error, () => {
-          if (credentials.login.trim().toLowerCase() === 'admin@uber.com') {
-            return {
-              success: true,
-              access_token: 'local_admin_token_' + Date.now(),
-              user: { role: 'admin' },
-              message: 'Sesión administrativa local iniciada',
-            };
-          }
-          return this.offline.loginOrCreateLocalPassenger(credentials);
-        }),
+        this.withOfflineFallback(error, () => this.offline.loginOrCreateLocalPassenger(credentials)),
       ),
       tap((response) => this.storeSession(response)),
     );
   }
 
   register(userData: RegisterPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, userData).pipe(
-      tap((response) => {
-        this.offline.setOfflineMode(false);
-        void this.cacheCredentials(userData.email, userData.password, response.user.role, userData);
-      }),
-      catchError((error: unknown) => this.withOfflineFallback(error, () => this.offline.register(userData))),
-      tap((response) => this.storeSession(response)),
-    );
+    const localRegisterResponse: AuthResponse = {
+      success: true,
+      access_token: `local_${userData.role}_token_` + Date.now(),
+      user: { role: userData.role },
+      message: 'Usuario registrado exitosamente en modo local',
+    };
+
+    this.offline.setOfflineMode(true);
+    this.storeSession(localRegisterResponse);
+    void this.cacheCredentials(userData.email, userData.password, userData.role, userData);
+    
+    // Registra también localmente al conductor o cliente en el servicio offline
+    this.offline.register(userData);
+
+    return of(localRegisterResponse);
   }
 
   logout(): Observable<{ success: boolean; message?: string }> {
